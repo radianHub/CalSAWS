@@ -2,19 +2,23 @@ public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Databas
     
     List<CalSAWSPerson> personList;
     Set<String> personIds;
+    Map<String, List<CalSAWSPerson.Cases>> personCaseNumsMap; // * PERSON'S CIN => LIST OF CASES
 
     public CalSAWSPerson_Batch(List<CalSAWSPerson> personList) {
         this.personList = personList;
         for (CalSAWSPerson person : personList) {
             this.personIds.add(String.valueOf(person.persId));
+            this.personCaseNumsMap.put(person.cin, person.cases);
         }
     }
 
     public Database.QueryLocator start(Database.BatchableContext BC) {
 
+        // * QUERY FOR EXISTING CONTACTS WITH GIVEN PERSON IDS
         return Database.getQueryLocator([
             SELECT
                 Id,
+                CIN__c,
                 CalWIN_CWIN__c,
                 CalWIN_ClientID__c,
                 FirstName,
@@ -30,7 +34,11 @@ public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Databas
                 MailingStreet,
                 MailingCity,
                 MailingState,
-                MailingPostalCode
+                MailingPostalCode,
+                OtherStreet,
+                OtherCity,
+                OtherState,
+                OtherPostalCode
             FROM
                 Contact
             WHERE
@@ -39,15 +47,15 @@ public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Databas
     }
 
     public void execute(Database.BatchableContext BC, List<Contact> scope) {
-        Set<String> caseKeys = new Set<String>();
         Set<Contact> conToUpsert = new Set<Contact>();
 
         for (Contact existingCon : scope) {
             for (CalSAWSPerson person : personList) {
-                System.debug('CalSAWS Person ' + person);
-                System.debug('Contact ' + existingCon);
+
+                // * UPDATE FIELDS OF EXISTING CONTACTS
                 if (personIds.contains(existingCon.CalWIN_CWIN__c)) {
                     if (existingCon.CalWIN_CWIN__c == String.valueOf(person.persId)) {
+                        existingCon.CIN__c = person.cin;
                         existingCon.Birthdate = person.dob;
                         existingCon.CalWIN_GenderId__c = person.gender;
                         existingCon.Email = person.emailAddr;
@@ -78,13 +86,14 @@ public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Databas
                                 }
                             }
                         }
-
-
                         conToUpsert.add(existingCon);
                     }  
                 } else {
+
+                    // * CREATE NEW CONTACT IF ONE IS NOT FOUND
                     Contact con = new Contact(
                         CalWIN_CWIN__c = String.valueOf(person.persId),
+                        CIN__c = person.cin,
                         FirstName = person.firstName,
                         LastName = person.lastName,
                         Suffix = person.nameSuffix,
@@ -123,19 +132,21 @@ public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Databas
                             }
                         }
                     }
-
                     conToUpsert.add(con);
                 }
             }
         }
 
+        // * UPSERT CONTACTS
         List<Contact> conToUpsertList = new List<Contact>();
         conToUpsertList.addAll(conToUpsert);
         processUpsertResultList(Database.upsert(conToUpsertList, false), 'Contact');
-
     }
 
     public void finish(Database.BatchableContext BC) {
+
+
+
     }
 
     private void processUpsertResultList(Database.UpsertResult[] upsertResultList, String sObjName) {

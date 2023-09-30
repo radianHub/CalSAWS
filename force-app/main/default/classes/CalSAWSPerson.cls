@@ -111,7 +111,10 @@ public with sharing class CalSAWSPerson {
 
             CalSAWSAuthentication.Token token = CalSAWSAuthentication.authorize(endpoints.get('Token'));
 
+            // * FETCH NEW AND UPDATED PERSONS FOR THE PAST 48 HOURS
             List<CalSAWSPerson> getPersonList = CalSAWSCallouts.getPersons(token, endpoints.get('Persons'));
+
+            // * FETCH GREATER DETAIL FOR EACH PERSON GATHERED PREVIOUSLY
             for (CalSAWSPerson person : getPersonList) {
                 CalSAWSPerson personV2 = CalSAWSCallouts.getPersonById(
                     token,
@@ -121,8 +124,10 @@ public with sharing class CalSAWSPerson {
                 personList.add(personV2);
             }
 
-            // CalSAWSPerson_Batch b = new CalSAWSPerson_Batch(personMappedList);
-            // Database.executeBatch(b);
+            // * START THE BATCH CHAINING PROCESS
+            System.debug(':::STARTING PERSON BATCH:::');
+            CalSAWSPerson_Batch b = new CalSAWSPerson_Batch(personList);
+            Database.executeBatch(b);
         }
     }
 }
