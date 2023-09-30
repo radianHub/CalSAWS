@@ -1,0 +1,64 @@
+public with sharing class CalSAWSCallouts {
+    
+    // * RETURNS NEW/UPDATED PERSONS FOR THE PAST 72 HOURS
+    public static List<CalSAWSPerson> getPersons(CalSAWSAuthentication.Token token, String endpoint) {
+        Date today = Date.today().addDays(-2);
+        String y = String.valueOf(today.year());
+        String m = String.valueOf(today.month());
+        if (today.month() < 10) {
+            m  = '0' + m;
+        }
+        String d = String.valueOf(today.day());
+        if (today.day() < 10) {
+            d = '0' + d;
+        }
+        String searchDate = y + '-' + m + '-' + d + 'T' + '00';
+
+        HttpRequest req = new HttpRequest();
+        req.setHeader('Authorization', token.type + ' ' + token.token);
+        req.setHeader('Content-Type', 'application/json');
+        req.setHeader('Accept', '*/*');
+        req.setMethod('GET');
+        req.setEndpoint(endpoint + 'mdm?fromDate=' + searchDate);
+
+        Http http = new Http();
+        HttpResponse res = http.send(req);
+        System.debug(res.getStatusCode() + ': ' + res.getStatus());
+
+        if (res.getStatusCode() == 200) {
+            return CalSAWSUtilities.parsePersons(res.getBody());
+        } else {
+            if (res.getStatusCode() != 204) {
+                CalSAWSUtilities.Error err = CalSAWSUtilities.parseError(res.getBody());
+                System.debug(err.error);
+                throw new CalloutException(err.error);
+            }
+        }
+        return null;
+    }
+
+    // * RETURNS A PERSON USING A PERSON ID
+    public static CalSAWSPerson getPersonById(CalSAWSAuthentication.Token token, String endpoint, Integer personId) {
+        HttpRequest req = new HttpRequest();
+        req.setHeader('Authorization', token.type + ' ' + token.token);
+        req.setHeader('Content-Type', 'application/json');
+        req.setHeader('Accept', '*/*');
+        req.setMethod('GET');
+        req.setEndpoint(endpoint + 'byPersId?persId=' + personId);
+
+        Http http = new Http();
+        HttpResponse res = http.send(req);
+        System.debug(res.getStatusCode() + ': ' + res.getStatus());
+        
+        if (res.getStatusCode() == 200) {
+            return CalSAWSUtilities.parsePerson(res.getBody());
+        } else {
+            if (res.getStatusCode() != 204) {
+                CalSAWSUtilities.Error err = CalSAWSUtilities.parseError(res.getBody());
+                System.debug(err.error);
+                throw new CalloutException(err.error);
+            }
+        }
+        return null;
+    }
+}

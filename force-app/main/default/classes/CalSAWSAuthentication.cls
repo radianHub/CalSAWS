@@ -1,5 +1,15 @@
 public with sharing class CalSAWSAuthentication {
 
+    public class Token {
+        public String type;
+        public String token;
+    
+        public Token(String type, String token) {
+            this.type = type;
+            this.token = token;
+        }
+    }
+
     private static String payload(String id, String pw, String scope) {
         String payload = 'client_id=' + EncodingUtil.urlEncode(id,'UTF-8');
         payload += '&client_secret=' + EncodingUtil.urlEncode(pw,'UTF-8');
@@ -8,16 +18,11 @@ public with sharing class CalSAWSAuthentication {
         return payload;
     }
     
-    public static Map<String, String> authorize() {
-        CalSAWS_Endpoint__mdt token = [
-            SELECT URL__c
-            FROM CalSAWS_Endpoint__mdt
-            WHERE MasterLabel = 'Token'
-        ];
+    public static Token authorize(String endpoint) {
         CalSAWS_Credentials__c creds = CalSAWS_Credentials__c.getOrgDefaults();
 
         HttpRequest req = new HttpRequest();
-        req.setEndpoint(token.URL__c);
+        req.setEndpoint(endpoint);
         req.setMethod('POST');
         req.setBody(payload(creds.Client_Id__c, creds.Client_Secret__c, creds.Scope__c));
 
@@ -31,7 +36,7 @@ public with sharing class CalSAWSAuthentication {
             accessToken = (String) result.get('access_token');
             tokenType = (String) result.get('token_type');
 
-            return new Map<String, String> { 'token' => accessToken, 'type' => tokenType };
+            return new Token(tokenType, accessToken);
         } else {
             CalSAWSUtilities.Error err = CalSAWSUtilities.parseError(res.getBody());
             throw new CalloutException(err.error + ' : ' + err.error_description);
