@@ -83,4 +83,41 @@ public with sharing class CalSAWSCallouts {
             throw new CalloutException(err.error);
         }
     }
+
+    // * RETURNS A LIST OF PROGRAMS ASSOCIATED WITH A PERSON'S CIN #
+    public static List<CalSAWSProgram> getProgramsByCin(CalSAWSAuthentication.Token token, String endpoint, String cin, Date viewDate) {
+        String d = String.valueOf(viewDate.day());
+        if (viewDate.day() < 10) {
+            d = '0' + d;
+        }
+        String m = String.valueOf(viewDate.month());
+        if (viewDate.month() < 10) {
+            m = '0' + m;
+        }
+        String y = String.valueOf(viewDate.year());
+
+        String searchDate = y + '-' + m + '-' + d;
+
+        HttpRequest req = new HttpRequest();
+        req.setHeader('Authorization', token.type + ' ' + token.token);
+        req.setHeader('Content-Type', 'application/json');
+        req.setHeader('Accept', '*/*');
+        req.setMethod('GET');
+        req.setEndpoint(endpoint + '/byCIN?cin=' + cin + '&viewDate=' + searchDate);
+
+        Http http = new Http();
+        HttpResponse res = http.send(req);
+        System.debug(res.getStatusCode() + ': ' + res.getStatus());
+
+        if (res.getStatusCode() == 200) {
+            return CalSAWSUtilities.parsePrograms(res.getBody());
+        } else {
+            if (res.getStatusCode() != 204) {
+                CalSAWSUtilities.Error err = CalSAWSUtilities.parseError(res.getBody());
+                System.debug(err.error);
+                throw new CalloutException(err.error);
+            }
+        }
+        return null;
+    }
 }
