@@ -1,18 +1,18 @@
 public with sharing class CalSAWSCase_Batch implements Database.Batchable<sObject>, Database.Stateful {
     
-    List<List<CalSAWSCase>> caseList;
     Map<String, String> endpoints;
     Map<String, Contact> cinContactMap;
+    Map<String, List<CalSAWSCase>> cinCaseMap;
     Set<String> caseNumbs;
 
-    public CalSAWSCase_Batch(List<List<CalSAWSCase>> caseList, Map<String, String> endpoints, Map<String, Contact> cinContactMap) {
-        this.caseList = caseList;
+    public CalSAWSCase_Batch(Map<String, String> endpoints, Map<String, Contact> cinContactMap, Map<String, List<CalSAWSCase>> cinCaseMap) {
+        this.cinCaseMap = cinCaseMap;
         this.endpoints = endpoints;
         this.cinContactMap = cinContactMap;
 
-        for (List<CalSAWSCase> personsCases : caseList) {
-            for (CalSAWSCase cases : personsCases) {
-                for (CalSAWSCase.Cases sawsCase : cases.cases) {
+        for (String cin : cinCaseMap.keySet()) {
+            for (CalSAWSCase personCases : cinCaseMap.get(cin)) {
+                for (CalSAWSCase.Cases sawsCase : personCases.cases) {
                     this.caseNumbs.add(sawsCase.caseNum);
                 }
             }
@@ -41,32 +41,30 @@ public with sharing class CalSAWSCase_Batch implements Database.Batchable<sObjec
         Set<CalWINs_Case__c> caseToUpsert = new Set<CalWINs_Case__c>();
 
         for (CalWINs_Case__c existingCs : scope) {
-            if (caseNumbs.contains(existingCs.Case_Number__c)) {
-                for (List<CalSAWSCase> personsCases : caseList) {
-                    for (CalSAWSCase cs : personsCases) {
-                        for (CalSAWSCase.Cases sawsCase : cs.cases) {
-                            if (existingCs.Case_Number__c == sawsCase.caseNum) {
-                                existingCs.CalWIN_ClientID__c = cinContactMap.get(cs.cin).CalWIN_ClientID__c;
-                                existingCs.Contact__c = cinContactMap.get(cs.cin).Id;
-                                Date caseDate;
-                                for (CalSAWSCase.CaseFlag csFlag : sawsCase.caseFlags) {
-                                    if (caseDate == null) {
-                                        caseDate = csFlag.begDate;
-                                    } else if (csFlag.begDate > caseDate) {
-                                        caseDate = csFlag.begDate;
-                                    }
+            if (caseNumbs.contains(existingCs.Case_Number__c) && cinCaseMap.keySet().contains(existingCs.Contact__r.CIN__c)) {
+                for (CalSAWSCase cs : cinCaseMap.get(existingCs.Contact__r.CIN__c)) {
+                    for (CalSAWSCase.Cases sawsCase : cs.cases) {
+                        if (existingCs.Case_Number__c == sawsCase.caseNum) {
+                            existingCs.CalWIN_ClientID__c = cinContactMap.get(cs.cin).CalWIN_ClientID__c;
+                            existingCs.Contact__c = cinContactMap.get(cs.cin).Id;
+                            Date caseDate;
+                            for (CalSAWSCase.CaseFlag csFlag : sawsCase.caseFlags) {
+                                if (caseDate == null) {
+                                    caseDate = csFlag.begDate;
+                                } else if (csFlag.begDate > caseDate) {
+                                    caseDate = csFlag.begDate;
                                 }
-                                existingCs.Case_Status_Date__c = caseDate;
-                                existingCS.Name = sawsCase.caseName;
-    
-                                caseToUpsert.add(existingCs);
                             }
+                            existingCs.Case_Status_Date__c = caseDate;
+                            existingCS.Name = sawsCase.caseName;
+
+                            caseToUpsert.add(existingCs);
                         }
                     }
                 }
             } else {
-                for (List<CalSAWSCase> personsCases : caseList) {
-                    for (CalSAWSCase cs : personsCases) {
+                for (String cin : cinCaseMap.keySet()) {
+                    for (CalSAWSCase cs : cinCaseMap.get(cin)) {
                         for (CalSAWSCase.Cases sawsCase : cs.cases) {
                             CalWINs_Case__c newCs = new CalWINs_Case__c();
                             newCs.Name = sawsCase.caseName;
@@ -95,6 +93,7 @@ public with sharing class CalSAWSCase_Batch implements Database.Batchable<sObjec
     }
 
     public void finish(Database.BatchableContext BC) {
-
+        // * CHAIN THE NEXT BATCH PROCESS (PROGRAM)
+        CalSAWSUtilities.processPrograms(endpoints, cinContactMap);
     }
 }

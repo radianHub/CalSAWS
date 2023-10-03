@@ -22,23 +22,8 @@ public with sharing class CalSAWSUtilities {
         return (List<CalSAWSCase>) System.JSON.deserialize(json, List<CalSAWSCase>.class);
     }
 
-    // public static List<CalSAWSProgram> parsePrograms(String json) {
-
-    // }
-
-    public static void processUpsertResultList(Database.UpsertResult[] upsertResultList, String sObjName) {
-        for (Database.UpsertResult r : upsertResultList) {
-            if (!r.isSuccess()) {
-                for (Database.Error e : r.getErrors()) {
-                    System.debug(
-                        'Error upserting ' + sObjName +
-                        ' - status code: ' + e.getStatusCode() +
-                        ';  Message: ' + e.getMessage() +
-                        '; Fields that affected this error: ' + e.getFields()
-                    );
-                }
-            }
-        }
+    public static List<CalSAWSProgram> parsePrograms(String json) {
+        return (List<CalSAWSProgram>) System.JSON.deserialize(json, List<CalSAWSProgram>.class);
     }
 
     public static void processPersons(Map<String, String> endpoints) {
@@ -68,7 +53,7 @@ public with sharing class CalSAWSUtilities {
     public static void processCases(Map<String, String> endpoints, Map<String, Contact> cinContactMap) {
         CalSAWSAuthentication.Token token = CalSAWSAuthentication.authorize(endpoints.get('Token'));
 
-        List<List<CalSAWSCase>> caseList = new List<List<CalSAWSCase>>();
+        Map<String, List<CalSAWSCase>> cinCaseMap = new Map<String, List<CalSAWSCase>>();
         // * FETCH CASE DETAILS FOR EACH CIN NUMBER
         for (String cin : cinContactMap.keySet()) {
             List<CalSAWSCase> cs = CalSAWSCallouts.getCaseByCin(
@@ -76,11 +61,47 @@ public with sharing class CalSAWSUtilities {
                 endpoints.get('Cases'),
                 cin
             );
-            caseList.add(cs);
+            cinCaseMap.put(cin, cs);
         }
 
         System.debug(':::STARTING CASE BATCH:::');
-        CalSAWSCase_Batch b = new CalSAWSCase_Batch(caseList, endpoints, cinContactMap);
+        CalSAWSCase_Batch b = new CalSAWSCase_Batch(endpoints, cinContactMap, cinCaseMap);
         Database.executeBatch(b);
+    }
+
+    public static void processPrograms(Map<String, String> endpoints, Map<String, Contact> cinContactMap) {
+        CalSAWSAuthentication.Token token = CalSAWSAuthentication.authorize(endpoints.get('Programs'));
+
+        Map<String, List<CalSAWSProgram>> cinProgramMap = new Map<String, List<CalSAWSProgram>>();
+        Date today = Date.today();
+        // * FETCH PROGRAM DETAILS FOR EACH CIN NUMBER
+        for (String cin : cinContactMap.keySet()) {
+            List<CalSAWSProgram> pg = CalSAWSCallouts.getProgramsByCin(
+                token,
+                endpoints.get('Programs'),
+                cin,
+                today
+            );
+            cinProgramMap.put(cin, pg);
+        }
+
+        System.debug(':::STARTING PROGRAM BATCH:::');
+        CalSAWSProgram_Batch b = new CalSAWSProgram_Batch(endpoints, cinContactMap, cinProgramMap);
+        Database.executeBatch(b);
+    }
+
+    public static void processUpsertResultList(Database.UpsertResult[] upsertResultList, String sObjName) {
+        for (Database.UpsertResult r : upsertResultList) {
+            if (!r.isSuccess()) {
+                for (Database.Error e : r.getErrors()) {
+                    System.debug(
+                        'Error upserting ' + sObjName +
+                        ' - status code: ' + e.getStatusCode() +
+                        ';  Message: ' + e.getMessage() +
+                        '; Fields that affected this error: ' + e.getFields()
+                    );
+                }
+            }
+        }
     }
 }
