@@ -1,14 +1,15 @@
 public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Database.Stateful {
     
     List<CalSAWSPerson> personList;
+    Map<String, String> endpoints;
     Set<String> personIds;
-    Map<String, List<CalSAWSPerson.Cases>> personCaseNumsMap; // * PERSON'S CIN => LIST OF CASES
+    Map<String, Contact> cinContactMap;
 
-    public CalSAWSPerson_Batch(List<CalSAWSPerson> personList) {
+    public CalSAWSPerson_Batch(List<CalSAWSPerson> personList, Map<String, String> endpoints) {
         this.personList = personList;
+        this.endpoints = endpoints;
         for (CalSAWSPerson person : personList) {
             this.personIds.add(String.valueOf(person.persId));
-            this.personCaseNumsMap.put(person.cin, person.cases);
         }
     }
 
@@ -38,7 +39,9 @@ public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Databas
                 OtherStreet,
                 OtherCity,
                 OtherState,
-                OtherPostalCode
+                OtherPostalCode,
+                Launchpad__Case_Number__c,
+                Case_Number_2__c
             FROM
                 Contact
             WHERE
@@ -53,8 +56,8 @@ public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Databas
             for (CalSAWSPerson person : personList) {
 
                 // * UPDATE FIELDS OF EXISTING CONTACTS
-                if (personIds.contains(existingCon.CalWIN_CWIN__c)) {
-                    if (existingCon.CalWIN_CWIN__c == String.valueOf(person.persId)) {
+                if (personIds.contains(existingCon.CalWIN_ClientID__c)) {
+                    if (existingCon.CalWIN_ClientID__c == String.valueOf(person.persId)) {
                         existingCon.CIN__c = person.cin;
                         existingCon.Birthdate = person.dob;
                         existingCon.CalWIN_GenderId__c = person.gender;
@@ -86,13 +89,20 @@ public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Databas
                                 }
                             }
                         }
+                        if (person.cases.size() == 1) {
+                            existingCon.Launchpad__Case_Number__c = person.cases[0].caseNum;
+                        }
+                        if (person.cases.size() == 2) {
+                            existingCon.Case_Number_2__c = person.cases[1].caseNum;
+                        }
                         conToUpsert.add(existingCon);
+                        this.cinContactMap.put(existingCon.CIN__c, existingCon);
                     }  
                 } else {
 
                     // * CREATE NEW CONTACT IF ONE IS NOT FOUND
                     Contact con = new Contact(
-                        CalWIN_CWIN__c = String.valueOf(person.persId),
+                        CalWIN_ClientID__c = String.valueOf(person.persId),
                         CIN__c = person.cin,
                         FirstName = person.firstName,
                         LastName = person.lastName,
@@ -132,7 +142,14 @@ public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Databas
                             }
                         }
                     }
+                    if (person.cases.size() == 1) {
+                        con.Launchpad__Case_Number__c = person.cases[0].caseNum;
+                    }
+                    if (person.cases.size() == 2) {
+                        con.Case_Number_2__c = person.cases[1].caseNum;
+                    }
                     conToUpsert.add(con);
+                    this.cinContactMap.put(con.CIN__c, con);
                 }
             }
         }
@@ -140,28 +157,11 @@ public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Databas
         // * UPSERT CONTACTS
         List<Contact> conToUpsertList = new List<Contact>();
         conToUpsertList.addAll(conToUpsert);
-        processUpsertResultList(Database.upsert(conToUpsertList, false), 'Contact');
+        CalSAWSUtilities.processUpsertResultList(Database.upsert(conToUpsertList, false), 'Contact');
     }
 
     public void finish(Database.BatchableContext BC) {
-
-
-
+        // * CHAIN THE NEXT BATCH PROCESS (CASES)
+        CalSAWSUtilities.processCases(endpoints, cinContactMap);
     }
-
-    private void processUpsertResultList(Database.UpsertResult[] upsertResultList, String sObjName) {
-        for (Database.UpsertResult r : upsertResultList) {
-            if (!r.isSuccess()) {
-                for (Database.Error e : r.getErrors()) {
-                    System.debug(
-                        'Error upserting ' + sObjName +
-                        ' - status code: ' + e.getStatusCode() +
-                        ';  Message: ' + e.getMessage() +
-                        '; Fields that affected this error: ' + e.getFields()
-                    );
-                }
-            }
-        }
-    }
-
 }

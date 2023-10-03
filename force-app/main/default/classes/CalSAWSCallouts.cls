@@ -61,4 +61,26 @@ public with sharing class CalSAWSCallouts {
         }
         return null;
     }
+
+    // * RETURNS A LIST OF CASES ASSOCIATED WITH A PERSON'S CIN #
+    public static List<CalSAWSCase> getCaseByCin(CalSAWSAuthentication.Token token, String endpoint, String cin) {
+        HttpRequest req = new HttpRequest();
+        req.setHeader('Authorization', token.type + ' ' + token.token);
+        req.setHeader('Content-Type', 'application/json');
+        req.setHeader('Accept', '*/*');
+        req.setMethod('GET');
+        req.setEndpoint(endpoint + 'bySsnCin?cin=' + cin);
+
+        Http http = new Http();
+        HttpResponse res = http.send(req);
+        System.debug(res.getStatusCode() + ': ' + res.getStatus());
+
+        if (res.getStatusCode() == 200) {
+            return CalSAWSUtilities.parseCase(res.getBody());
+        } else {
+            CalSAWSUtilities.Error err = CalSAWSUtilities.parseError(res.getBody());
+            System.debug(err.error);
+            throw new CalloutException(err.error);
+        }
+    }
 }
