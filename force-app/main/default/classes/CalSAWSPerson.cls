@@ -91,43 +91,5 @@ public with sharing class CalSAWSPerson {
         public String exemptRsn;
         public Date begDate;
         public Date endDate;
-    }
-
-    public class PersonMethods implements Schedulable {
-        public Map<String, String> endpoints;
-
-        public PersonMethods() {
-            List<CalSAWS_Endpoint__mdt> endpointList = [
-                SELECT URL__c, MasterLabel
-                FROM CalSAWS_Endpoint__mdt
-            ];
-            for (CalSAWS_Endpoint__mdt url : endpointList) {
-                this.endpoints.put(url.MasterLabel, url.URL__c);
-            }
-        }
-
-        public void execute(SchedulableContext sc) {
-            List<CalSAWSPerson> personList = new List<CalSAWSPerson>();
-
-            CalSAWSAuthentication.Token token = CalSAWSAuthentication.authorize(endpoints.get('Token'));
-
-            // * FETCH NEW AND UPDATED PERSONS FOR THE PAST 48 HOURS
-            List<CalSAWSPerson> getPersonList = CalSAWSCallouts.getPersons(token, endpoints.get('Persons'));
-
-            // * FETCH GREATER DETAIL FOR EACH PERSON GATHERED PREVIOUSLY
-            for (CalSAWSPerson person : getPersonList) {
-                CalSAWSPerson personV2 = CalSAWSCallouts.getPersonById(
-                    token,
-                    endpoints.get('Persons'),
-                    person.persId
-                );
-                personList.add(personV2);
-            }
-
-            // * START THE BATCH CHAINING PROCESS
-            System.debug(':::STARTING PERSON BATCH:::');
-            CalSAWSPerson_Batch b = new CalSAWSPerson_Batch(personList);
-            Database.executeBatch(b);
-        }
-    }
+    } 
 }
