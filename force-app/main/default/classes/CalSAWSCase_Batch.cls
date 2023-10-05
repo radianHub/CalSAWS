@@ -9,6 +9,7 @@ public with sharing class CalSAWSCase_Batch implements Database.Batchable<sObjec
         this.cinCaseMap = cinCaseMap;
         this.endpoints = endpoints;
         this.cinContactMap = cinContactMap;
+        this.caseNumbs = new Set<String>();
 
         for (String cin : cinCaseMap.keySet()) {
             for (CalSAWSCase personCases : cinCaseMap.get(cin)) {

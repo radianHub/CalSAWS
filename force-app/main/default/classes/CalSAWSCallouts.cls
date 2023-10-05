@@ -37,14 +37,39 @@ public with sharing class CalSAWSCallouts {
         return null;
     }
 
-    // * RETURNS A PERSON USING A PERSON ID
-    public static CalSAWSPerson getPersonById(CalSAWSAuthentication.Token token, String endpoint, Integer personId) {
+    // * RETURNS A PERSON USING A PERSON'S CIN #
+    public static CalSAWSPerson getPersonByCin(CalSAWSAuthentication.Token token, String endpoint, String cin) {
         HttpRequest req = new HttpRequest();
         req.setHeader('Authorization', token.type + ' ' + token.token);
         req.setHeader('Content-Type', 'application/json');
         req.setHeader('Accept', '*/*');
         req.setMethod('GET');
-        req.setEndpoint(endpoint + 'byPersId?persId=' + personId);
+        req.setEndpoint(endpoint + 'bySsnCin?cin=' + cin);
+
+        Http http = new Http();
+        HttpResponse res = http.send(req);
+        System.debug(res.getStatusCode() + ': ' + res.getStatus());
+        
+        if (res.getStatusCode() == 200) {
+            return CalSAWSUtilities.parsePerson(res.getBody());
+        } else {
+            if (res.getStatusCode() != 204) {
+                CalSAWSUtilities.Error err = CalSAWSUtilities.parseError(res.getBody());
+                System.debug(err.error);
+                throw new CalloutException(err.error);
+            }
+        }
+        return null;
+    }
+
+    // * RETURNS A PERSON USING A PERSON'S SSN #
+    public static CalSAWSPerson getPersonBySsn(CalSAWSAuthentication.Token token, String endpoint, String ssn) {
+        HttpRequest req = new HttpRequest();
+        req.setHeader('Authorization', token.type + ' ' + token.token);
+        req.setHeader('Content-Type', 'application/json');
+        req.setHeader('Accept', '*/*');
+        req.setMethod('GET');
+        req.setEndpoint(endpoint + 'bySsnCin?ssn=' + ssn);
 
         Http http = new Http();
         HttpResponse res = http.send(req);

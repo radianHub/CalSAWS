@@ -13,7 +13,11 @@ public with sharing class CalSAWSProcess_Schedule implements Schedulable{
     }
 
     public void execute(SchedulableContext sc) {
+        // * PROCESS NEW OR UPDATED PERSONS
         CalSAWSUtilities.processPersons(endpoints);
+        // * PROCESS EXISTING CONTACTS USINGS SSN TO FIND UPDATED DATA
+        CalSAWSPersonSearch_Batch b = new CalSAWSPersonSearch_Batch(endpoints);
+        Database.executeBatch(b);
     }
 
     public static void scheduleJob(String cronExp) {

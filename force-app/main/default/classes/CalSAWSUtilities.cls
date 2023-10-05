@@ -36,10 +36,10 @@ public with sharing class CalSAWSUtilities {
 
         // * FETCH GREATER DETAIL FOR EACH PERSON GATHERED PREVIOUSLY
         for (CalSAWSPerson person : getPersonList) {
-            CalSAWSPerson personV2 = CalSAWSCallouts.getPersonById(
+            CalSAWSPerson personV2 = CalSAWSCallouts.getPersonByCin(
                 token,
                 endpoints.get('Persons'),
-                person.persId
+                person.cin
             );
             personList.add(personV2);
         }
@@ -48,6 +48,16 @@ public with sharing class CalSAWSUtilities {
         System.debug(':::STARTING PERSON BATCH:::');
         CalSAWSPerson_Batch b = new CalSAWSPerson_Batch(personList, endpoints);
         Database.executeBatch(b);
+    }
+
+    public static CalSAWSPerson processPerson(Map<String, String> endpoints, String ssn) {
+        CalSAWSAuthentication.Token token = CalSAWSAuthentication.authorize(endpoints.get('Token'));
+
+        return CalSAWSCallouts.getPersonBySsn(
+            token,
+            endpoints.get('Persons'),
+            ssn
+        );
     }
 
     public static void processCases(Map<String, String> endpoints, Map<String, Contact> cinContactMap) {

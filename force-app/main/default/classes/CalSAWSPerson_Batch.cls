@@ -11,6 +11,7 @@ public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Databas
         for (CalSAWSPerson person : personList) {
             this.personIds.add(String.valueOf(person.persId));
         }
+        this.cinContactMap = new Map<String, Contact>();
     }
 
     public Database.QueryLocator start(Database.BatchableContext BC) {
@@ -20,6 +21,7 @@ public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Databas
             SELECT
                 Id,
                 CIN__c,
+                Launchpad__Unique_ID_SSN__c,
                 CalWIN_CWIN__c,
                 CalWIN_ClientID__c,
                 FirstName,
@@ -96,7 +98,7 @@ public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Databas
                             existingCon.Case_Number_2__c = person.cases[1].caseNum;
                         }
                         conToUpsert.add(existingCon);
-                        this.cinContactMap.put(existingCon.CIN__c, existingCon);
+                        cinContactMap.put(existingCon.CIN__c, existingCon);
                     }  
                 } else {
 
@@ -149,7 +151,7 @@ public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Databas
                         con.Case_Number_2__c = person.cases[1].caseNum;
                     }
                     conToUpsert.add(con);
-                    this.cinContactMap.put(con.CIN__c, con);
+                    cinContactMap.put(con.CIN__c, con);
                 }
             }
         }
