@@ -49,7 +49,7 @@ public with sharing class CalSAWSPersonSearch_Batch implements Database.Batchabl
             if (con.Launchpad__Unique_ID_SSN__c != null) {
                 CalSAWSPerson per = CalSAWSUtilities.processPerson(endpoints, con.Launchpad__Unique_ID_SSN__c);
 
-                con.CalWIN_ClientID__c = Sting.valueOf(per.persId);
+                con.CalWIN_ClientID__c = String.valueOf(per.persId);
                 con.CIN__c = per.cin;
                 con.Birthdate = per.dob;
                 con.CalWIN_GenderID__c = per.gender;
