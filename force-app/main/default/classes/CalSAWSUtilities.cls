@@ -36,12 +36,12 @@ public with sharing class CalSAWSUtilities {
 
         // * FETCH GREATER DETAIL FOR EACH PERSON GATHERED PREVIOUSLY
         for (CalSAWSPerson person : getPersonList) {
-            CalSAWSPerson personV2 = CalSAWSCallouts.getPersonByCin(
+            List<CalSAWSPerson> personV2 = CalSAWSCallouts.getPersonByCin(
                 token,
                 endpoints.get('Persons'),
                 person.cin
             );
-            personList.add(personV2);
+            personList.add(personV2[0]);
         }
 
         // * START THE BATCH CHAINING PROCESS
@@ -49,8 +49,8 @@ public with sharing class CalSAWSUtilities {
         CalSAWSPerson_Batch b = new CalSAWSPerson_Batch(personList, endpoints);
         Database.executeBatch(b);
     }
-
-    public static CalSAWSPerson processPerson(Map<String, String> endpoints, String ssn) {
+    
+    public static List<CalSAWSPerson> processPerson(Map<String, String> endpoints, String ssn) {
         CalSAWSAuthentication.Token token = CalSAWSAuthentication.authorize(endpoints.get('Token'));
 
         return CalSAWSCallouts.getPersonBySsn(
@@ -80,7 +80,7 @@ public with sharing class CalSAWSUtilities {
     }
 
     public static void processPrograms(Map<String, String> endpoints, Map<String, Contact> cinContactMap) {
-        CalSAWSAuthentication.Token token = CalSAWSAuthentication.authorize(endpoints.get('Programs'));
+        CalSAWSAuthentication.Token token = CalSAWSAuthentication.authorize(endpoints.get('Token'));
 
         Map<String, List<CalSAWSProgram>> cinProgramMap = new Map<String, List<CalSAWSProgram>>();
         Date today = Date.today();
@@ -114,4 +114,5 @@ public with sharing class CalSAWSUtilities {
             }
         }
     }
+
 }
