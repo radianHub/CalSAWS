@@ -2,6 +2,7 @@ public with sharing class CalSAWSPersonSearch_Batch implements Database.Batchabl
 
     Map<String, String> endpoints;
     Map<String, Contact> cinContactMap;
+    Integer recordCount = 0;
 
     public CalSAWSPersonSearch_Batch(Map<String, String> endpoints) {
         this.endpoints = endpoints;
@@ -46,15 +47,16 @@ public with sharing class CalSAWSPersonSearch_Batch implements Database.Batchabl
         Set<Contact> conToUpsert = new Set<Contact>();
 
         for (Contact con : scope) {
+            recordCount++;
             if (con.Launchpad__Unique_ID_SSN__c != null) {
-                CalSAWSPerson per = CalSAWSUtilities.processPerson(endpoints, con.Launchpad__Unique_ID_SSN__c);
+                List<CalSAWSPerson> per = CalSAWSUtilities.processPerson(endpoints, con.Launchpad__Unique_ID_SSN__c);
 
-                con.CalWIN_ClientID__c = String.valueOf(per.persId);
-                con.CIN__c = per.cin;
-                con.Birthdate = per.dob;
-                con.CalWIN_GenderID__c = per.gender;
-                con.Email = per.emailAddr;
-                for (CalSAWSPerson.Phones phone : per.phNumbers) {
+                con.CalWIN_ClientID__c = per[0].persId;
+                con.CIN__c = per[0].cin;
+                con.Birthdate = per[0].dob;
+                con.CalWIN_GenderID__c = per[0].gender;
+                con.Email = per[0].emailAddr;
+                for (CalSAWSPerson.Phones phone : per[0].phNumbers) {
                     switch on phone.type {
                         when 'Home' {
                             con.Phone = phone.phNum;
@@ -64,7 +66,7 @@ public with sharing class CalSAWSPersonSearch_Batch implements Database.Batchabl
                         }
                     } 
                 }
-                for (CalSAWSPerson.Address addr : per.addr) {
+                for (CalSAWSPerson.Address addr : per[0].addr) {
                     switch on addr.type {
                         when 'Mailing' {
                             con.MailingStreet = addr.line1Addr + ' ' + addr.line2Addr;
@@ -80,15 +82,15 @@ public with sharing class CalSAWSPersonSearch_Batch implements Database.Batchabl
                         }
                     }
                 }
-                if (per.cases.size() == 1) {
-                    con.Launchpad__Case_Number__c = per.cases[0].caseNum;
+                if (per[0].cases.size() == 1) {
+                    con.Launchpad__Case_Number__c = per[0].cases[0].caseNum;
                 }
-                if (per.cases.size() == 2) {
-                    con.Case_Number_2__c = per.cases[1].caseNum;
+                if (per[0].cases.size() == 2) {
+                    con.Case_Number_2__c = per[0].cases[1].caseNum;
                 }
 
                 conToUpsert.add(con);
-                cinContactMap.put(per.cin, con);
+                cinContactMap.put(per[0].cin, con);
             }
         }
 
@@ -99,7 +101,10 @@ public with sharing class CalSAWSPersonSearch_Batch implements Database.Batchabl
     }
 
     public void finish(Database.BatchableContext BC) {
-        // * CHAIN THE NEXT BATCH PROCESS (CASES)
-        CalSAWSUtilities.processCases(endpoints, cinContactMap);
+
+        if (recordCount != 0) {
+            // * CHAIN THE NEXT BATCH PROCESS (CASES)
+            CalSAWSUtilities.processCases(endpoints, cinContactMap);   
+        }
     }
 }

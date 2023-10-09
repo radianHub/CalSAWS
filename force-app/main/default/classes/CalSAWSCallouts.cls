@@ -38,7 +38,7 @@ public with sharing class CalSAWSCallouts {
     }
 
     // * RETURNS A PERSON USING A PERSON'S CIN #
-    public static CalSAWSPerson getPersonByCin(CalSAWSAuthentication.Token token, String endpoint, String cin) {
+    public static List<CalSAWSPerson> getPersonByCin(CalSAWSAuthentication.Token token, String endpoint, String cin) {
         HttpRequest req = new HttpRequest();
         req.setHeader('Authorization', token.type + ' ' + token.token);
         req.setHeader('Content-Type', 'application/json');
@@ -51,7 +51,7 @@ public with sharing class CalSAWSCallouts {
         System.debug(res.getStatusCode() + ': ' + res.getStatus());
         
         if (res.getStatusCode() == 200) {
-            return CalSAWSUtilities.parsePerson(res.getBody());
+            return CalSAWSUtilities.parsePersons(res.getBody());
         } else {
             if (res.getStatusCode() != 204) {
                 CalSAWSUtilities.Error err = CalSAWSUtilities.parseError(res.getBody());
@@ -63,7 +63,7 @@ public with sharing class CalSAWSCallouts {
     }
 
     // * RETURNS A PERSON USING A PERSON'S SSN #
-    public static CalSAWSPerson getPersonBySsn(CalSAWSAuthentication.Token token, String endpoint, String ssn) {
+    public static List<CalSAWSPerson> getPersonBySsn(CalSAWSAuthentication.Token token, String endpoint, String ssn) {
         HttpRequest req = new HttpRequest();
         req.setHeader('Authorization', token.type + ' ' + token.token);
         req.setHeader('Content-Type', 'application/json');
@@ -76,7 +76,7 @@ public with sharing class CalSAWSCallouts {
         System.debug(res.getStatusCode() + ': ' + res.getStatus());
         
         if (res.getStatusCode() == 200) {
-            return CalSAWSUtilities.parsePerson(res.getBody());
+            return CalSAWSUtilities.parsePersons(res.getBody());
         } else {
             if (res.getStatusCode() != 204) {
                 CalSAWSUtilities.Error err = CalSAWSUtilities.parseError(res.getBody());
@@ -101,6 +101,7 @@ public with sharing class CalSAWSCallouts {
         System.debug(res.getStatusCode() + ': ' + res.getStatus());
 
         if (res.getStatusCode() == 200) {
+            System.debug(res.getBody());
             return CalSAWSUtilities.parseCase(res.getBody());
         } else {
             CalSAWSUtilities.Error err = CalSAWSUtilities.parseError(res.getBody());

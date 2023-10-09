@@ -1,6 +1,6 @@
 public with sharing class CalSAWSPerson {
 
-    public Integer persId;
+    public String persId;
     public String countyCode;
     public String ssn;
     public String cin;
@@ -45,13 +45,13 @@ public with sharing class CalSAWSPerson {
     }
 
     public class ProgDetail {
-        public Integer pgmId;
+        public String pgmId;
         public String pgm;
         public String pgmStatus;
     }
 
     public class OtherName {
-        public Integer otherNameId;
+        public String otherNameId;
         public String otherLastName;
         public String otherFirstName;
         public String otherMidName;
@@ -80,7 +80,7 @@ public with sharing class CalSAWSPerson {
 
     public class IncAmount {
         public String program;
-        public Integer amount;
+        public String amount;
         public String endRsnDescr;
         public Date begDate;
         public Date endDate;

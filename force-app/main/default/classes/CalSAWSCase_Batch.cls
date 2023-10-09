@@ -1,9 +1,10 @@
-public with sharing class CalSAWSCase_Batch implements Database.Batchable<sObject>, Database.Stateful {
+public with sharing class CalSAWSCase_Batch implements Database.Batchable<sObject>, Database.Stateful, Database.AllowsCallouts {
     
     Map<String, String> endpoints;
     Map<String, Contact> cinContactMap;
     Map<String, List<CalSAWSCase>> cinCaseMap;
     Set<String> caseNumbs;
+    Integer recordCount = 0;
 
     public CalSAWSCase_Batch(Map<String, String> endpoints, Map<String, Contact> cinContactMap, Map<String, List<CalSAWSCase>> cinCaseMap) {
         this.cinCaseMap = cinCaseMap;
@@ -42,6 +43,7 @@ public with sharing class CalSAWSCase_Batch implements Database.Batchable<sObjec
         Set<CalWINs_Case__c> caseToUpsert = new Set<CalWINs_Case__c>();
 
         for (CalWINs_Case__c existingCs : scope) {
+            recordCount++;
             if (caseNumbs.contains(existingCs.Case_Number__c) && cinCaseMap.keySet().contains(existingCs.Contact__r.CIN__c)) {
                 for (CalSAWSCase cs : cinCaseMap.get(existingCs.Contact__r.CIN__c)) {
                     for (CalSAWSCase.Cases sawsCase : cs.cases) {
@@ -94,7 +96,35 @@ public with sharing class CalSAWSCase_Batch implements Database.Batchable<sObjec
     }
 
     public void finish(Database.BatchableContext BC) {
-        // * CHAIN THE NEXT BATCH PROCESS (PROGRAM)
-        CalSAWSUtilities.processPrograms(endpoints, cinContactMap);
+        if (recordCount == 0 ) {
+            List<CalWINs_Case__c> newCasesToInsert = new List<CalWINs_Case__c>();
+
+            for (String cin : cinCaseMap.keySet()) {
+                for (CalSAWSCase cs : cinCaseMap.get(cin)) {
+                    for (CalSAWSCase.Cases sawsCase : cs.cases) {
+                        CalWINs_Case__c newCs = new CalWINs_Case__c();
+                        newCs.Name = sawsCase.caseName;
+                        newCs.CalWIN_ClientID__c = cinContactMap.get(cs.cin).CalWIN_ClientID__c;
+                        newCs.Contact__c = cinContactMap.get(cs.cin).Id;
+                        Date caseDate;
+                        for (CalSAWSCase.CaseFlag csFlag : sawsCase.caseFlags) {
+                            if (caseDate == null) {
+                                caseDate = csFlag.begDate;
+                            } else if (csFlag.begDate > caseDate) {
+                                caseDate = csFlag.begDate;
+                            }
+                        }
+                        newCs.Case_Status_Date__c = caseDate;
+
+                        newCasesToInsert.add(newCs);
+                    }
+                }
+            }
+
+            insert newCasesToInsert;
+        } else {
+            // * CHAIN THE NEXT BATCH PROCESS (PROGRAM)
+            CalSAWSUtilities.processPrograms(endpoints, cinContactMap);
+        }
     }
 }

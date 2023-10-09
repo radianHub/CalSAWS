@@ -3,7 +3,7 @@ public with sharing class CalSAWSProgram {
     public String caseNum;
     public String caseName;
     public String countyCode;
-    public Integer pgmId;
+    public String pgmId;
     public String pgm;
     public String aidCode;
     public List<ProgramDetail> programDetail;
@@ -27,7 +27,7 @@ public with sharing class CalSAWSProgram {
     }
 
     public class ProgramPerson {
-        public Integer persId;
+        public String persId;
         public String persName;
         public String persStat;
         public String persStatRsn;
@@ -43,9 +43,9 @@ public with sharing class CalSAWSProgram {
     public class ProgramAdmin {
         public String secondPayeePrefix;
         public String adminCode;
-        public Integer persId;
+        public String persId;
         public String persName;
-        public Integer orgId;
+        public String orgId;
         public String orgName;
         public String payeeSubTypeCode;
         public String authRepNumIdentif;

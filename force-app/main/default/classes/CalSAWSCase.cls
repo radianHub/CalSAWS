@@ -1,6 +1,6 @@
 public with sharing class CalSAWSCase {
 
-    public Integer persId;
+    public String persId;
     public String ssn;
     public String cin;
     public String lastName;

@@ -1,4 +1,4 @@
-public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Database.Stateful {
+public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Database.Stateful, Database.AllowsCallouts {
     
     List<CalSAWSPerson> personList;
     Map<String, String> endpoints;
@@ -9,7 +9,7 @@ public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Databas
         this.personList = personList;
         this.endpoints = endpoints;
         for (CalSAWSPerson person : personList) {
-            this.personIds.add(String.valueOf(person.persId));
+            this.personIds.add(person.persId);
         }
         this.cinContactMap = new Map<String, Contact>();
     }
@@ -59,7 +59,7 @@ public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Databas
 
                 // * UPDATE FIELDS OF EXISTING CONTACTS
                 if (personIds.contains(existingCon.CalWIN_ClientID__c)) {
-                    if (existingCon.CalWIN_ClientID__c == String.valueOf(person.persId)) {
+                    if (existingCon.CalWIN_ClientID__c == person.persId) {
                         existingCon.CIN__c = person.cin;
                         existingCon.Birthdate = person.dob;
                         existingCon.CalWIN_GenderId__c = person.gender;
@@ -104,7 +104,7 @@ public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Databas
 
                     // * CREATE NEW CONTACT IF ONE IS NOT FOUND
                     Contact con = new Contact(
-                        CalWIN_ClientID__c = String.valueOf(person.persId),
+                        CalWIN_ClientID__c = person.persId,
                         CIN__c = person.cin,
                         FirstName = person.firstName,
                         LastName = person.lastName,
