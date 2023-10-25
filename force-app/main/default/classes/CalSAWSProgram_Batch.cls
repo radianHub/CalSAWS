@@ -28,6 +28,7 @@ public with sharing class CalSAWSProgram_Batch implements Database.Batchable<sOb
                 CaseProgramStatus__c,
                 CaseStatusDate__c,
                 Contact__c,
+                Contact__r.CIN__c,
                 IndividualParticipationStatus__c,
                 IndividualStatus__c,
                 IndividualStatusDate__c,
