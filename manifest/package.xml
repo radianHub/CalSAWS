@@ -1,12 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
 	<types>
-		<members>CalWINs_Case__c.Case_Number__c</members>
-		<name>CustomField</name>
-	</types>
-	<types>
-		<members>CalSAWS_Endpoint.Cases</members>
-		<name>CustomMetadata</name>
-	</types>
-	<version>55.0</version>
+		<members>CalSAWS_Program__c.Program_Compact_Layout</members>
+		<name>CompactLayout</name>
+	</types>	
+	<version>58.0</version>
 </Package>

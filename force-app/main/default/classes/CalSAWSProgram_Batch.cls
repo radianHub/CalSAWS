@@ -24,37 +24,58 @@ public with sharing class CalSAWSProgram_Batch implements Database.Batchable<sOb
             SELECT
                 Id,
                 Name,
-                CaseNumber__c,
-                CaseProgramStatus__c,
-                CaseStatusDate__c,
+                Case_Number__c,
+                Program_Id__c,
+                Program_Begin_Date__c,
+                Redetermination_Due_Date__c,
+                Program_Status__c,
+                Program_Status_Reason__c,
+                Worker__c,
+                Worker_Number__c,
+                Worker_Begin_Date__c,
+                Worker_End_Date__c,
                 Contact__c,
-                IndividualParticipationStatus__c,
-                IndividualStatus__c,
-                IndividualStatusDate__c,
-                Program__c
+                Contact__r.CIN__c
             FROM
-                CIS_CalWin_Program__c
+                CalSAWS_Program__c
             WHERE
-                Program__c IN :progIds
+                Program_Id__c IN :progIds
         ]);
     }
 
-    public void execute(Database.BatchableContext BC, List<CIS_CalWin_Program__c> scope) {
-        Set<CIS_CalWin_Program__c> progToUpsert = new Set<CIS_CalWin_Program__c>();
+    public void execute(Database.BatchableContext BC, List<CalSAWS_Program__c> scope) {
+        Set<CalSAWS_Program__c> progToUpsert = new Set<CalSAWS_Program__c>();
 
-        for (CIS_CalWin_Program__c existingProg : scope) {
+        for (CalSAWS_Program__c existingProg : scope) {
             recordCount++;
-            if (progIds.contains(existingProg.Program__c) && cinProgramMap.keySet().contains(existingProg.Contact__r.CIN__c)) {
+            if (progIds.contains(existingProg.Program_Id__c) && cinProgramMap.keySet().contains(existingProg.Contact__r.CIN__c)) {
                 for (CalSAWSProgram program : cinProgramMap.get(existingProg.Contact__r.CIN__c)) {
-                    if (existingProg.Program__c == program.pgmId) {
+                    if (existingProg.Program_Id__c == program.pgmId) {
+                        System.debug('Existing Programs ' + program);
                         for (CalSAWSProgram.ProgramDetail progDetail : program.programDetail) {
-                            existingProg.CaseProgramStatus__c = progDetail.status;
-                            existingProg.IndividualParticipationStatus__c = progDetail.statRsn;
-                            existingProg.CaseStatusDate__c = progDetail.begDate;
+                            existingProg.Program_Status__c = progDetail.status;
+                            existingProg.Program_Status_Reason__c = progDetail.statRsn;
+                            existingProg.Program_Begin_Date__c = progDetail.begDate;
                         }
-                        for (CalSAWSProgram.ProgramPerson persDetail : program.programPerson) {
-                            existingProg.IndividualStatus__c = persDetail.persStat;
-                            existingProg.IndividualStatusDate__c = persDetail.persBegDate;
+                        if (program.programRedeter != null && program.programRedeter.size() > 0) {
+                            List<Date> redetermDates = new List<Date>();
+                            for (CalSAWSProgram.ProgramRedeterm progRed : program.programRedeter) {
+                                if (progRed != null) { 
+                                    redetermDates.add(progRed.reDueDate);
+                                }
+                            }
+                            redetermDates.sort();
+                            existingProg.Redetermination_Due_Date__c = redetermDates[redetermDates.size()-1];
+                        }
+                        if (program.staffWorker != null && program.staffWorker.size() > 0) {
+                            for (CalSAWSProgram.StaffWorker sw : program.staffWorker) {
+                                existingProg.Worker__c = sw.worker;
+                                existingProg.Worker_Number__c = sw.workerNum;
+                                existingProg.Worker_Begin_Date__c = sw.begDate;
+                                if (sw.endDate.year() != 9999) {
+                                    existingProg.Worker_End_Date__c = sw.endDate;
+                                }
+                            }
                         }
                         progToUpsert.add(existingProg);
                     }
@@ -62,59 +83,114 @@ public with sharing class CalSAWSProgram_Batch implements Database.Batchable<sOb
             } else {
                 for (String cin : cinProgramMap.keySet()) {
                     for (CalSAWSProgram program : cinProgramMap.get(cin)) {
-                        CIS_CalWin_Program__c prog = new CIS_CalWin_Program__c(
+                        System.debug('New Program ' + program);
+                        CalSAWS_Program__c prog = new CalSAWS_Program__c(
                             Name = program.pgm,
-                            Program__c = program.pgmId,
-                            CaseNumber__c = program.caseNum,
+                            Program_Id__c = program.pgmId,
+                            Case_Number__c = program.caseNum,
                             Contact__c = cinContactMap.get(cin).Id
                         );
                         for (CalSAWSProgram.ProgramDetail progDetail : program.programDetail) {
-                            prog.CaseProgramStatus__c = progDetail.status;
-                            prog.IndividualParticipationStatus__c = progDetail.statRsn;
-                            prog.CaseStatusDate__c = progDetail.begDate;
+                            existingProg.Program_Status__c = progDetail.status;
+                            existingProg.Program_Status_Reason__c = progDetail.statRsn;
+                            existingProg.Program_Begin_Date__c = progDetail.begDate;
                         }
-                        for (CalSAWSProgram.ProgramPerson persDetail : program.programPerson) {
-                            prog.IndividualStatus__c = persDetail.persStat;
-                            prog.IndividualStatusDate__c = persDetail.persBegDate;
+                        if (program.programRedeter != null && program.programRedeter.size() > 0) {
+                            List<Date> redetermDates = new List<Date>();
+                            for (CalSAWSProgram.ProgramRedeterm progRed : program.programRedeter) {
+                                if (progRed != null) { 
+                                    redetermDates.add(progRed.reDueDate);
+                                }
+                            }
+                            redetermDates.sort();
+                            prog.Redetermination_Due_Date__c = redetermDates[redetermDates.size()-1];
                         }
-
+                        if (program.staffWorker != null && program.staffWorker.size() > 0) {
+                            for (CalSAWSProgram.StaffWorker sw : program.staffWorker) {
+                                prog.Worker__c = sw.worker;
+                                prog.Worker_Number__c = sw.workerNum;
+                                prog.Worker_Begin_Date__c = sw.begDate;
+                                if (sw.endDate.year() != 9999) {
+                                    prog.Worker_End_Date__c = sw.endDate;
+                                }
+                            }
+                        }
                         progToUpsert.add(prog);
                     }
                 }
             }
         }
 
-        List<CIS_CalWin_Program__c> progToUpsertList = new List<CIS_CalWin_Program__c>();
+        List<CalSAWS_Program__c> progToUpsertList = new List<CalSAWS_Program__c>();
         progToUpsertList.addAll(progToUpsert);
-        CalSAWSUtilities.processUpsertResultList(Database.upsert(progToUpsertList, false), 'CIS_CalWin_Program__c');
+        CalSAWSUtilities.processUpsertResultList(Database.upsert(progToUpsertList, false), 'CalSAWS_Program__c');
     }
 
     public void finish(Database.BatchableContext BC) {
         if (recordCount == 0) {
-            List<CIS_CalWin_Program__c> progToInsert = new List<CIS_CalWin_Program__c>();
+            List<CalSAWS_Program__c> progToInsert = new List<CalSAWS_Program__c>();
             for (String cin : cinProgramMap.keySet()) {
                 for (CalSAWSProgram program : cinProgramMap.get(cin)) {
-                    CIS_CalWin_Program__c prog = new CIS_CalWin_Program__c(
+                    System.debug('New Program ' + program);
+                    CalSAWS_Program__c prog = new CalSAWS_Program__c(
                         Name = program.pgm,
-                        Program__c = program.pgmId,
-                        CaseNumber__c = program.caseNum,
+                        Program_Id__c = program.pgmId,
+                        Case_Number__c = program.caseNum,
                         Contact__c = cinContactMap.get(cin).Id
                     );
                     for (CalSAWSProgram.ProgramDetail progDetail : program.programDetail) {
-                        prog.CaseProgramStatus__c = progDetail.status;
-                        prog.IndividualParticipationStatus__c = progDetail.statRsn;
-                        prog.CaseStatusDate__c = progDetail.begDate;
+                        prog.Program_Status__c = progDetail.status;
+                        prog.Program_Status_Reason__c = progDetail.statRsn;
+                        prog.Program_Begin_Date__c = progDetail.begDate;
                     }
-                    for (CalSAWSProgram.ProgramPerson persDetail : program.programPerson) {
-                        prog.IndividualStatus__c = persDetail.persStat;
-                        prog.IndividualStatusDate__c = persDetail.persBegDate;
+                    if (program.programRedeter != null && program.programRedeter.size() > 0) {
+                        List<Date> redetermDates = new List<Date>();
+                        for (CalSAWSProgram.ProgramRedeterm progRed : program.programRedeter) {
+                            if (progRed != null) { 
+                                redetermDates.add(progRed.reDueDate);
+                            }
+                        }
+                        redetermDates.sort();
+                        prog.Redetermination_Due_Date__c = redetermDates[redetermDates.size()-1];
                     }
-
+                    if (program.staffWorker != null && program.staffWorker.size() > 0) {
+                        for (CalSAWSProgram.StaffWorker sw : program.staffWorker) {
+                            prog.Worker__c = sw.worker;
+                            prog.Worker_Number__c = sw.workerNum;
+                            prog.Worker_Begin_Date__c = sw.begDate;
+                            if (sw.endDate.year() != 9999) {
+                                prog.Worker_End_Date__c = sw.endDate;
+                            }
+                        }
+                    }
                     progToInsert.add(prog);
                 }
             }
 
             insert progToInsert;
+        } else {
+            List<Contact> conToUpdate = new List<Contact>();
+            for (String cin : cinProgramMap.keySet()) {
+                String worker;
+                for (CalSAWSProgram program : cinProgramMap.get(cin)) {
+                    if (program.pgm == 'Welfare to Work') {
+                        if (program.staffWorker != null && program.staffWorker.size() > 0) {
+                            for (CalSAWSProgram.StaffWorker sw : program.staffWorker) {
+                                worker = sw.worker; 
+                            }
+                        } else {
+                            worker = 'No worker named';
+                        }
+                    }
+                }
+                Contact con = new Contact(
+                    Id = cinContactMap.get(cin).Id,
+                    CalWORKs_ES__c = worker
+                );
+                conToUpdate.add(con);
+            }
+
+            update conToUpdate;
         }
         
         System.debug('Batch Chaining Complete');
