@@ -31,7 +31,8 @@ public with sharing class CalSAWSCase_Batch implements Database.Batchable<sObjec
                 Case_Number__c,
                 Case_Status__c,
                 Case_Status_Date__c,
-                Contact__c
+                Contact__c,
+                Contact__r.CIN__c
             FROM
                 CalWINs_Case__c
             WHERE
@@ -45,6 +46,7 @@ public with sharing class CalSAWSCase_Batch implements Database.Batchable<sObjec
         for (CalWINs_Case__c existingCs : scope) {
             recordCount++;
             if (caseNumbs.contains(existingCs.Case_Number__c) && cinCaseMap.keySet().contains(existingCs.Contact__r.CIN__c)) {
+                System.debug('TEst');
                 for (CalSAWSCase cs : cinCaseMap.get(existingCs.Contact__r.CIN__c)) {
                     for (CalSAWSCase.Cases sawsCase : cs.cases) {
                         if (existingCs.Case_Number__c == sawsCase.caseNum) {
@@ -70,6 +72,7 @@ public with sharing class CalSAWSCase_Batch implements Database.Batchable<sObjec
                     for (CalSAWSCase cs : cinCaseMap.get(cin)) {
                         for (CalSAWSCase.Cases sawsCase : cs.cases) {
                             CalWINs_Case__c newCs = new CalWINs_Case__c();
+                            newCs.Case_Number__c = sawsCase.caseNum;
                             newCs.Name = sawsCase.caseName;
                             newCs.CalWIN_ClientID__c = cinContactMap.get(cs.cin).CalWIN_ClientID__c;
                             newCs.Contact__c = cinContactMap.get(cs.cin).Id;
@@ -103,6 +106,7 @@ public with sharing class CalSAWSCase_Batch implements Database.Batchable<sObjec
                 for (CalSAWSCase cs : cinCaseMap.get(cin)) {
                     for (CalSAWSCase.Cases sawsCase : cs.cases) {
                         CalWINs_Case__c newCs = new CalWINs_Case__c();
+                        newCs.Case_Number__c = sawsCase.caseNum;
                         newCs.Name = sawsCase.caseName;
                         newCs.CalWIN_ClientID__c = cinContactMap.get(cs.cin).CalWIN_ClientID__c;
                         newCs.Contact__c = cinContactMap.get(cs.cin).Id;
