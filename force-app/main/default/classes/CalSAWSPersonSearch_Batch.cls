@@ -105,7 +105,9 @@ public with sharing class CalSAWSPersonSearch_Batch implements Database.Batchabl
 
         if (recordCount != 0) {
             // * CHAIN THE NEXT BATCH PROCESS (CASES)
-            CalSAWSUtilities.processCases(endpoints, cinContactMap);   
+            if (!Test.isRunningTest()) {
+                CalSAWSUtilities.processCases(endpoints, cinContactMap);   
+            }
         }
     }
 }

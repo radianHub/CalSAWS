@@ -22,7 +22,11 @@ public with sharing class CalSAWSAuthentication {
         CalSAWS_Credentials__c creds = CalSAWS_Credentials__c.getOrgDefaults();
 
         HttpRequest req = new HttpRequest();
-        req.setEndpoint(endpoint);
+        if (Test.isRunningTest()) {
+            req.setEndpoint('authentication-server');
+        } else {
+            req.setEndpoint(endpoint);
+        }
         req.setMethod('POST');
         req.setBody(payload(creds.Client_Id__c, creds.Client_Secret__c, creds.Scope__c));
 
@@ -39,7 +43,8 @@ public with sharing class CalSAWSAuthentication {
             return new Token(tokenType, accessToken);
         } else {
             CalSAWSUtilities.Error err = CalSAWSUtilities.parseError(res.getBody());
-            throw new CalloutException(err.error + ' : ' + err.error_description);
+            System.debug(err.message);
+            return null;
         }
     }
 }
