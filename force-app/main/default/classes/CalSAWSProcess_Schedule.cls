@@ -19,7 +19,7 @@ public with sharing class CalSAWSProcess_Schedule implements Schedulable{
             CalSAWSUtilities.processPersons(endpoints);
             // * PROCESS EXISTING CONTACTS USINGS SSN TO FIND UPDATED DATA
             CalSAWSPersonSearch_Batch b = new CalSAWSPersonSearch_Batch(endpoints);
-            Database.executeBatch(b);
+            Database.executeBatch(b, 50);
         }
     }
 
