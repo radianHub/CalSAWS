@@ -14,9 +14,10 @@ public with sharing class CalSAWSUtilities {
         return (List<CalSAWSPerson>) System.JSON.deserialize(json, List<CalSAWSPerson>.class);
     }
 
-    public static CalSAWSPerson parsePerson(String json) {
-        return (CalSAWSPerson) System.JSON.deserialize(json, CalSAWSPerson.class);
-    }
+    // * UNUSED
+    // public static CalSAWSPerson parsePerson(String json) {
+    //     return (CalSAWSPerson) System.JSON.deserialize(json, CalSAWSPerson.class);
+    // }
 
     public static List<CalSAWSCase> parseCase(String json) {
         return (List<CalSAWSCase>) System.JSON.deserialize(json, List<CalSAWSCase>.class);
@@ -35,13 +36,15 @@ public with sharing class CalSAWSUtilities {
         List<CalSAWSPerson> getPersonList = CalSAWSCallouts.getPersons(token, endpoints.get('Persons'));
 
         // * FETCH GREATER DETAIL FOR EACH PERSON GATHERED PREVIOUSLY
-        for (CalSAWSPerson person : getPersonList) {
-            List<CalSAWSPerson> personV2 = CalSAWSCallouts.getPersonByCin(
-                token,
-                endpoints.get('Persons'),
-                person.cin
-            );
-            personList.add(personV2[0]);
+        if (getPersonList != null && getPersonList.size() > 0) {
+            for (CalSAWSPerson person : getPersonList) {
+                List<CalSAWSPerson> personV2 = CalSAWSCallouts.getPersonByCin(
+                    token,
+                    endpoints.get('Persons'),
+                    person.cin
+                );
+                personList.add(personV2[0]);
+            }
         }
 
         // * START THE BATCH CHAINING PROCESS

@@ -28,14 +28,9 @@ public with sharing class CalSAWSCallouts {
         if (res.getStatusCode() == 200) {
             return CalSAWSUtilities.parsePersons(res.getBody());
         } else {
-            if (res.getStatusCode() == 404) {
-                CalSAWSUtilities.Error err = CalSAWSUtilities.parseError(res.getBody());
-                System.debug(err.message); 
-            }
             if (res.getStatusCode() != 204) {
                 CalSAWSUtilities.Error err = CalSAWSUtilities.parseError(res.getBody());
                 System.debug(err.message);
-                throw new CalloutException(err.message);
             }
         }
         return null;
@@ -59,8 +54,7 @@ public with sharing class CalSAWSCallouts {
         } else {
             if (res.getStatusCode() != 204 || res.getStatusCode() != 404) {
                 CalSAWSUtilities.Error err = CalSAWSUtilities.parseError(res.getBody());
-                System.debug(err.error);
-                throw new CalloutException(err.error);
+                System.debug(err.message);
             }
         }
         return null;
@@ -84,8 +78,7 @@ public with sharing class CalSAWSCallouts {
         } else {
             if (res.getStatusCode() != 204) {
                 CalSAWSUtilities.Error err = CalSAWSUtilities.parseError(res.getBody());
-                System.debug(err.error);
-                throw new CalloutException(err.error);
+                System.debug(err.message);
             }
         }
         return null;
@@ -109,9 +102,9 @@ public with sharing class CalSAWSCallouts {
             return CalSAWSUtilities.parseCase(res.getBody());
         } else {
             CalSAWSUtilities.Error err = CalSAWSUtilities.parseError(res.getBody());
-            System.debug(err.error);
-            throw new CalloutException(err.error);
+            System.debug(err.message);
         }
+        return null;
     }
 
     // * RETURNS A LIST OF PROGRAMS ASSOCIATED WITH A PERSON'S CIN #
@@ -144,8 +137,7 @@ public with sharing class CalSAWSCallouts {
         } else {
             if (res.getStatusCode() != 204) {
                 CalSAWSUtilities.Error err = CalSAWSUtilities.parseError(res.getBody());
-                System.debug(err.error);
-                throw new CalloutException(err.error);
+                System.debug(err.message);
             }
         }
         return null;

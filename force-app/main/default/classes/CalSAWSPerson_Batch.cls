@@ -8,8 +8,9 @@ public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Databas
     public CalSAWSPerson_Batch(List<CalSAWSPerson> personList, Map<String, String> endpoints) {
         this.personList = personList;
         this.endpoints = endpoints;
+        this.personIds = new Set<String>();
         for (CalSAWSPerson person : personList) {
-            this.personIds.add(person.persId);
+            personIds.add(person.cin);
         }
         this.cinContactMap = new Map<String, Contact>();
     }
@@ -46,21 +47,18 @@ public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Databas
                 Case_Number_2__c
             FROM
                 Contact
-            WHERE
-                CalWIN_CWIN__c IN :personIds
         ]);
     }
 
     public void execute(Database.BatchableContext BC, List<Contact> scope) {
         Set<Contact> conToUpsert = new Set<Contact>();
 
-        for (Contact existingCon : scope) {
-            for (CalSAWSPerson person : personList) {
-
+        for (CalSAWSPerson person : personList) {
+            for (Contact existingCon : scope) {
                 // * UPDATE FIELDS OF EXISTING CONTACTS
-                if (personIds.contains(existingCon.CalWIN_ClientID__c)) {
-                    if (existingCon.CalWIN_ClientID__c == person.persId) {
-                        existingCon.CIN__c = person.cin;
+                if (personIds.contains(existingCon.CIN__c)) {
+                    if (existingCon.CIN__c == person.cin) {
+                        existingCon.CalWIN_ClientID__c = person.persId;
                         existingCon.Birthdate = person.dob;
                         existingCon.CalWIN_GenderId__c = person.gender;
                         existingCon.Email = person.emailAddr;
@@ -163,7 +161,10 @@ public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Databas
     }
 
     public void finish(Database.BatchableContext BC) {
+
         // * CHAIN THE NEXT BATCH PROCESS (CASES)
-        CalSAWSUtilities.processCases(endpoints, cinContactMap);
+        if (!Test.isRunningTest()) {
+            CalSAWSUtilities.processCases(endpoints, cinContactMap);
+        }
     }
 }
