@@ -50,7 +50,7 @@ public with sharing class CalSAWSUtilities {
         // * START THE BATCH CHAINING PROCESS
         System.debug(':::STARTING PERSON BATCH:::');
         CalSAWSPerson_Batch b = new CalSAWSPerson_Batch(personList, endpoints);
-        Database.executeBatch(b);
+        Database.executeBatch(b, 50);
     }
     
     public static List<CalSAWSPerson> processPerson(Map<String, String> endpoints, String ssn) {
