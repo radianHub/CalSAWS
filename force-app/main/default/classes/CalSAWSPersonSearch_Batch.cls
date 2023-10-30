@@ -56,35 +56,43 @@ public with sharing class CalSAWSPersonSearch_Batch implements Database.Batchabl
                     con.Birthdate = per[0].dob;
                     con.CalWIN_GenderID__c = per[0].gender;
                     con.Email = per[0].emailAddr;
-                    for (CalSAWSPerson.Phones phone : per[0].phNumbers) {
-                        switch on phone.type {
-                            when 'Home' {
-                                con.Phone = phone.phNum;
-                            }
-                            when 'Cell' {
-                                con.MobilePhone = phone.phNum;
-                            }
-                        } 
+                    
+                    if (per[0].phNumbers != null && per[0].phNumbers.size() > 0) {
+                        for (CalSAWSPerson.Phones phone : per[0].phNumbers) {
+                            switch on phone.type {
+                                when 'Home' {
+                                    con.Phone = phone.phNum;
+                                }
+                                when 'Cell' {
+                                    con.MobilePhone = phone.phNum;
+                                }
+                            } 
+                        }
                     }
-                    for (CalSAWSPerson.Address addr : per[0].addr) {
-                        switch on addr.type {
-                            when 'Mailing' {
-                                con.MailingStreet = addr.line1Addr + ' ' + addr.line2Addr;
-                                con.MailingCity = addr.cityName;
-                                con.MailingState = addr.stateCode;
-                                con.MailingPostalCode = addr.zipCodeNum;
-                            }
-                            when 'Physical' {
-                                con.OtherStreet = addr.line1Addr + ' ' + addr.line2Addr;
-                                con.OtherCity = addr.cityName;
-                                con.OtherState = addr.stateCode;
-                                con.OtherPostalCode = addr.zipCodeNum; 
+
+                    if (per[0].addr != null && per[0].addr.size() > 0) {
+                        for (CalSAWSPerson.Address addr : per[0].addr) {
+                            switch on addr.type {
+                                when 'Mailing' {
+                                    con.MailingStreet = addr.line1Addr + ' ' + addr.line2Addr;
+                                    con.MailingCity = addr.cityName;
+                                    con.MailingState = addr.stateCode;
+                                    con.MailingPostalCode = addr.zipCodeNum;
+                                }
+                                when 'Physical' {
+                                    con.OtherStreet = addr.line1Addr + ' ' + addr.line2Addr;
+                                    con.OtherCity = addr.cityName;
+                                    con.OtherState = addr.stateCode;
+                                    con.OtherPostalCode = addr.zipCodeNum; 
+                                }
                             }
                         }
                     }
+
                     if (per[0].cases.size() == 1) {
                         con.Launchpad__Case_Number__c = per[0].cases[0].caseNum;
                     }
+
                     if (per[0].cases.size() == 2) {
                         con.Case_Number_2__c = per[0].cases[1].caseNum;
                     }
