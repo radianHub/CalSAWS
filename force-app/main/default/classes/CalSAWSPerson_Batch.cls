@@ -63,35 +63,43 @@ public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Databas
                         existingCon.CalWIN_GenderId__c = person.gender;
                         existingCon.Email = person.emailAddr;
                         existingCon.CalWIN_EthnicityID__c = person.ethnicity[0].raceType;
-                        for (CalSAWSPerson.Phones phone : person.phNumbers) {
-                            switch on phone.type {
-                                when 'Home' {
-                                    existingCon.Phone = phone.phNum;
-                                }
-                                when 'Cell' {
-                                    existingCon.MobilePhone = phone.phNum;
-                                }
-                            }
-                        }
-                        for (CalSAWSPerson.Address address : person.addr) {
-                            switch on address.type {
-                                when 'Mailing' {
-                                    existingCon.MailingStreet = address.line1Addr + ' ' + address.line2Addr;
-                                    existingCon.MailingCity = address.cityName;
-                                    existingCon.MailingState = address.stateCode;
-                                    existingCon.MailingPostalCode = address.zipCodeNum;
-                                }
-                                when 'Physical' {
-                                    existingCon.OtherStreet = address.line1Addr + ' ' + address.line2Addr;
-                                    existingCon.OtherCity = address.cityName;
-                                    existingCon.OtherState = address.stateCode;
-                                    existingCon.OtherPostalCode = address.zipCodeNum; 
+
+                        if (person.phNumbers != null && person.phNumbers.size() > 0) {
+                            for (CalSAWSPerson.Phones phone : person.phNumbers) {
+                                switch on phone.type {
+                                    when 'Home' {
+                                        existingCon.Phone = phone.phNum;
+                                    }
+                                    when 'Cell' {
+                                        existingCon.MobilePhone = phone.phNum;
+                                    }
                                 }
                             }
                         }
+
+                        if (person.addr != null && person.addr.size() > 0) {
+                            for (CalSAWSPerson.Address address : person.addr) {
+                                switch on address.type {
+                                    when 'Mailing' {
+                                        existingCon.MailingStreet = address.line1Addr + ' ' + address.line2Addr;
+                                        existingCon.MailingCity = address.cityName;
+                                        existingCon.MailingState = address.stateCode;
+                                        existingCon.MailingPostalCode = address.zipCodeNum;
+                                    }
+                                    when 'Physical' {
+                                        existingCon.OtherStreet = address.line1Addr + ' ' + address.line2Addr;
+                                        existingCon.OtherCity = address.cityName;
+                                        existingCon.OtherState = address.stateCode;
+                                        existingCon.OtherPostalCode = address.zipCodeNum; 
+                                    }
+                                }
+                            }
+                        }
+
                         if (person.cases.size() == 1) {
                             existingCon.Launchpad__Case_Number__c = person.cases[0].caseNum;
                         }
+                        
                         if (person.cases.size() == 2) {
                             existingCon.Case_Number_2__c = person.cases[1].caseNum;
                         }
@@ -116,35 +124,42 @@ public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Databas
                         CalWIN_EthnicityID__c = person.ethnicity[0].raceType
                     );
 
-                    for (CalSAWSPerson.Phones phone : person.phNumbers) {
-                        switch on phone.type {
-                            when 'Home' {
-                                con.Phone = phone.phNum;
-                            }
-                            when 'Cell' {
-                                con.MobilePhone = phone.phNum;
-                            }
-                        }
-                    }
-                    for (CalSAWSPerson.Address address : person.addr) {
-                        switch on address.type {
-                            when 'Mailing' {
-                                con.MailingStreet = address.line1Addr + ' ' + address.line2Addr;
-                                con.MailingCity = address.cityName;
-                                con.MailingState = address.stateCode;
-                                con.MailingPostalCode = address.zipCodeNum;
-                            }
-                            when 'Physical' {
-                                con.OtherStreet = address.line1Addr + ' ' + address.line2Addr;
-                                con.OtherCity = address.cityName;
-                                con.OtherState = address.stateCode;
-                                con.OtherPostalCode = address.zipCodeNum; 
+                    if (person.phNumbers != null && person.phNumbers.size() > 0) {
+                        for (CalSAWSPerson.Phones phone : person.phNumbers) {
+                            switch on phone.type {
+                                when 'Home' {
+                                    con.Phone = phone.phNum;
+                                }
+                                when 'Cell' {
+                                    con.MobilePhone = phone.phNum;
+                                }
                             }
                         }
                     }
+
+                    if (person.addr != null && person.addr.size() > 0) {
+                        for (CalSAWSPerson.Address address : person.addr) {
+                            switch on address.type {
+                                when 'Mailing' {
+                                    con.MailingStreet = address.line1Addr + ' ' + address.line2Addr;
+                                    con.MailingCity = address.cityName;
+                                    con.MailingState = address.stateCode;
+                                    con.MailingPostalCode = address.zipCodeNum;
+                                }
+                                when 'Physical' {
+                                    con.OtherStreet = address.line1Addr + ' ' + address.line2Addr;
+                                    con.OtherCity = address.cityName;
+                                    con.OtherState = address.stateCode;
+                                    con.OtherPostalCode = address.zipCodeNum; 
+                                }
+                            }
+                        }
+                    }
+
                     if (person.cases.size() == 1) {
                         con.Launchpad__Case_Number__c = person.cases[0].caseNum;
                     }
+
                     if (person.cases.size() == 2) {
                         con.Case_Number_2__c = person.cases[1].caseNum;
                     }
