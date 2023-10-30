@@ -27,6 +27,7 @@ public with sharing class CalSAWSUtilities {
         return (List<CalSAWSProgram>) System.JSON.deserialize(json, List<CalSAWSProgram>.class);
     }
 
+    @future(callout=true)
     public static void processPersons(Map<String, String> endpoints) {
         List<CalSAWSPerson> personList = new List<CalSAWSPerson>();
 
@@ -48,9 +49,7 @@ public with sharing class CalSAWSUtilities {
         }
 
         // * START THE BATCH CHAINING PROCESS
-        System.debug(':::STARTING PERSON BATCH:::');
-        CalSAWSPerson_Batch b = new CalSAWSPerson_Batch(personList, endpoints);
-        Database.executeBatch(b, 50);
+        Id jobId = System.enqueueJob(new CalSAWSPerson_Queueable(personList, endpoints));
     }
     
     public static List<CalSAWSPerson> processPerson(Map<String, String> endpoints, String ssn) {
