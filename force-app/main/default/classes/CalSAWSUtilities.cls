@@ -78,7 +78,7 @@ public with sharing class CalSAWSUtilities {
 
         System.debug(':::STARTING CASE BATCH:::');
         CalSAWSCase_Batch b = new CalSAWSCase_Batch(endpoints, cinContactMap, cinCaseMap);
-        Database.executeBatch(b);
+        Database.executeBatch(b, 400);
     }
 
     public static void processPrograms(Map<String, String> endpoints, Map<String, Contact> cinContactMap) {
@@ -99,7 +99,7 @@ public with sharing class CalSAWSUtilities {
 
         System.debug(':::STARTING PROGRAM BATCH:::');
         CalSAWSProgram_Batch b = new CalSAWSProgram_Batch(endpoints, cinContactMap, cinProgramMap);
-        Database.executeBatch(b);
+        Database.executeBatch(b, 400);
     }
 
     public static void processUpsertResultList(Database.UpsertResult[] upsertResultList, String sObjName) {
