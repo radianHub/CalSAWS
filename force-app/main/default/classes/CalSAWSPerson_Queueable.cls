@@ -10,6 +10,6 @@ public with sharing class CalSAWSPerson_Queueable implements Queueable {
     public void execute(QueueableContext qc) {
         System.debug(':::STARTING PERSON BATCH:::');
         CalSAWSPerson_Batch b = new CalSAWSPerson_Batch(personList, endpoints);
-        Database.executeBatch(b, 50);
+        Database.executeBatch(b);
     }
 }

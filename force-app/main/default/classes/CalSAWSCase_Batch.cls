@@ -61,15 +61,17 @@ public with sharing class CalSAWSCase_Batch implements Database.Batchable<sObjec
                                 newCs.Name = sawsCase.caseName;
                                 newCs.CalWIN_ClientID__c = cinContactMap.get(cs.cin).CalWIN_ClientID__c;
                                 newCs.Contact__c = cinContactMap.get(cs.cin).Id;
-                                Date caseDate;
-                                for (CalSAWSCase.CaseFlag csFlag : sawsCase.caseFlags) {
-                                    if (caseDate == null) {
-                                        caseDate = csFlag.begDate;
-                                    } else if (csFlag.begDate > caseDate) {
-                                        caseDate = csFlag.begDate;
+                                if (sawsCase.caseFlags != null && sawsCase.caseFlags.size() > 0) {
+                                    Date caseDate;
+                                    for (CalSAWSCase.CaseFlag csFlag : sawsCase.caseFlags) {
+                                        if (caseDate == null) {
+                                            caseDate = csFlag.begDate;
+                                        } else if (csFlag.begDate > caseDate) {
+                                            caseDate = csFlag.begDate;
+                                        }
                                     }
+                                    newCs.Case_Status_Date__c = caseDate;
                                 }
-                                newCs.Case_Status_Date__c = caseDate;
     
                                 caseToUpsert.add(newCs);
                             }
@@ -98,15 +100,17 @@ public with sharing class CalSAWSCase_Batch implements Database.Batchable<sObjec
                                 newCs.Name = sawsCase.caseName;
                                 newCs.CalWIN_ClientID__c = cinContactMap.get(cs.cin).CalWIN_ClientID__c;
                                 newCs.Contact__c = cinContactMap.get(cs.cin).Id;
-                                Date caseDate;
-                                for (CalSAWSCase.CaseFlag csFlag : sawsCase.caseFlags) {
-                                    if (caseDate == null) {
-                                        caseDate = csFlag.begDate;
-                                    } else if (csFlag.begDate > caseDate) {
-                                        caseDate = csFlag.begDate;
+                                if (sawsCase.caseFlags != null && sawsCase.caseFlags.size() > 0) {
+                                    Date caseDate;
+                                    for (CalSAWSCase.CaseFlag csFlag : sawsCase.caseFlags) {
+                                        if (caseDate == null) {
+                                            caseDate = csFlag.begDate;
+                                        } else if (csFlag.begDate > caseDate) {
+                                            caseDate = csFlag.begDate;
+                                        }
                                     }
+                                    newCs.Case_Status_Date__c = caseDate;
                                 }
-                                newCs.Case_Status_Date__c = caseDate;
         
                                 newCasesToInsert.add(newCs);
                             }
