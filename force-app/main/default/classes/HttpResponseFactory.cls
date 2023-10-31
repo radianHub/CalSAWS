@@ -86,7 +86,144 @@ public with sharing class HttpResponseFactory {
         p.ethnicity = new List<CalSAWSPerson.Ethnicity>{ eth };
         p.cases = new List<CalSAWSPerson.Cases>{ cs, cs2 };
 
+        CalSAWSPerson p2 = new CalSAWSPerson();
+        p2.persId = '321';
+        p2.countyCode = 'co';
+        p2.ssn = '987654321';
+        p2.cin = '987654321';
+        p2.lastName = 'TestL';
+        p2.firstName = 'TestF';
+        p2.midName = 'TestM';
+        p2.nameSuffix = 'Jr.';
+        p2.dob = Date.today();
+        p2.age = '10';
+        p2.gender = 'Male';
+        p2.emailAddr = 'A@b.c';
+        p2.spokenLang = 'English';
+        p2.writtenLang = 'English';
+        p2.driveLic = 'D123456';
+        p2.phNumbers = new List<CalSAWSPerson.Phones>{ ph, ph2 };
+        p2.addr = new List<CalSAWSPerson.Address>{ addr, addr2 };
+        p2.ethnicity = new List<CalSAWSPerson.Ethnicity>{ eth };
+        p2.cases = new List<CalSAWSPerson.Cases>{ cs, cs2 };
+
+        return createHttpResponse(200, 'OK', JSON.serialize(new List<CalSAWSPerson>{ p, p2 }));
+    }
+
+    public static HttpResponse cinPerson1() {
+        CalSAWSPerson.Phones ph = new CalSAWSPerson.Phones();
+        ph.type = 'Cell';
+        ph.phNum = '1234567891';
+
+        CalSAWSPerson.Phones ph2 = new CalSAWSPerson.Phones();
+        ph2.type = 'Home';
+        ph2.phNum = '1234567891';
+
+        CalSAWSPerson.Address addr = new CalSAWSPerson.Address();
+        addr.type = 'Mailing';
+        addr.line1Addr = '123 S St';
+        addr.line2Addr = 'Unit 4';
+        addr.cityName = 'Madera';
+        addr.stateCode = 'CA';
+        addr.zipCodeNum = '12345';
+        
+        CalSAWSPerson.Address addr2 = new CalSAWSPerson.Address();
+        addr2.type = 'Physical';
+        addr2.line1Addr = '123 S St';
+        addr2.line2Addr = 'Unit 4';
+        addr2.cityName = 'Madera';
+        addr2.stateCode = 'CA';
+        addr2.zipCodeNum = '12345';
+        
+        CalSAWSPerson.Ethnicity eth = new CalSAWSPerson.Ethnicity();
+        eth.raceType = 'White';
+
+        CalSAWSPerson.Cases cs = new CalSAWSPerson.Cases();
+        cs.caseNum = '123456';
+
+        CalSAWSPerson.Cases cs2 = new CalSAWSPerson.Cases();
+        cs2.caseNum = '123456';
+
+        CalSAWSPerson p = new CalSAWSPerson();
+        p.persId = '123';
+        p.countyCode = 'co';
+        p.ssn = '123456789';
+        p.cin = '123456789';
+        p.lastName = 'LTest';
+        p.firstName = 'FTest';
+        p.midName = 'MTest';
+        p.nameSuffix = 'Jr.';
+        p.dob = Date.today();
+        p.age = '1';
+        p.gender = 'Male';
+        p.emailAddr = 'A@b.c';
+        p.spokenLang = 'English';
+        p.writtenLang = 'English';
+        p.driveLic = 'D123456';
+        p.phNumbers = new List<CalSAWSPerson.Phones>{ ph, ph2 };
+        p.addr = new List<CalSAWSPerson.Address>{ addr, addr2 };
+        p.ethnicity = new List<CalSAWSPerson.Ethnicity>{ eth };
+        p.cases = new List<CalSAWSPerson.Cases>{ cs, cs2 };
+
         return createHttpResponse(200, 'OK', JSON.serialize(new List<CalSAWSPerson>{ p }));
+    }
+
+    public static HttpResponse cinPerson2() {
+        CalSAWSPerson.Phones ph = new CalSAWSPerson.Phones();
+        ph.type = 'Cell';
+        ph.phNum = '1234567891';
+
+        CalSAWSPerson.Phones ph2 = new CalSAWSPerson.Phones();
+        ph2.type = 'Home';
+        ph2.phNum = '1234567891';
+
+        CalSAWSPerson.Address addr = new CalSAWSPerson.Address();
+        addr.type = 'Mailing';
+        addr.line1Addr = '123 S St';
+        addr.line2Addr = 'Unit 4';
+        addr.cityName = 'Madera';
+        addr.stateCode = 'CA';
+        addr.zipCodeNum = '12345';
+        
+        CalSAWSPerson.Address addr2 = new CalSAWSPerson.Address();
+        addr2.type = 'Physical';
+        addr2.line1Addr = '123 S St';
+        addr2.line2Addr = 'Unit 4';
+        addr2.cityName = 'Madera';
+        addr2.stateCode = 'CA';
+        addr2.zipCodeNum = '12345';
+        
+        CalSAWSPerson.Ethnicity eth = new CalSAWSPerson.Ethnicity();
+        eth.raceType = 'White';
+
+        CalSAWSPerson.Cases cs = new CalSAWSPerson.Cases();
+        cs.caseNum = '123456';
+
+        CalSAWSPerson.Cases cs2 = new CalSAWSPerson.Cases();
+        cs2.caseNum = '123456';
+
+        CalSAWSPerson p2 = new CalSAWSPerson();
+        p2.persId = '321';
+        p2.countyCode = 'co';
+        p2.ssn = '987654321';
+        p2.cin = '987654321';
+        p2.lastName = 'TestL';
+        p2.firstName = 'TestF';
+        p2.midName = 'TestM';
+        p2.nameSuffix = 'Jr.';
+        p2.dob = Date.today();
+        p2.age = '10';
+        p2.gender = 'Male';
+        p2.emailAddr = 'A@b.c';
+        p2.spokenLang = 'English';
+        p2.writtenLang = 'English';
+        p2.driveLic = 'D123456';
+        p2.phNumbers = new List<CalSAWSPerson.Phones>{ ph, ph2 };
+        p2.addr = new List<CalSAWSPerson.Address>{ addr, addr2 };
+        p2.ethnicity = new List<CalSAWSPerson.Ethnicity>{ eth };
+        p2.cases = new List<CalSAWSPerson.Cases>{ cs, cs2 };
+
+        return createHttpResponse(200, 'OK', JSON.serialize(new List<CalSAWSPerson>{ p2 }));
     }
 
     public static HttpResponse getPersons400Response() {

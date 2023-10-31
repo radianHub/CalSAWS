@@ -10,7 +10,9 @@ private with sharing class CalSAWSDataBaseSyncTest {
         'case' => HttpResponseFactory.getCases200Response(),
         'caseFailure' => HttpResponseFactory.getCasesFailureResponse(),
         'program' => HttpResponseFactory.getPrograms200Response(),
-        'programFailure' => HttpResponseFactory.getProgramsFailureResponse()
+        'programFailure' => HttpResponseFactory.getProgramsFailureResponse(),
+        'person1' => HttpResponseFactory.cinPerson1(),
+        'person2' => HttpResponseFactory.cinPerson2()
     };
 
     // * SETUP MATCHERS

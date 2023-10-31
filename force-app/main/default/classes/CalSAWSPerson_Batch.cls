@@ -47,66 +47,71 @@ public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Databas
                 Case_Number_2__c
             FROM
                 Contact
+            WHERE 
+                CIN__c IN :personIds
         ]);
     }
 
     public void execute(Database.BatchableContext BC, List<Contact> scope) {
         Set<Contact> conToUpsert = new Set<Contact>();
+        Set<String> cins = new Set<String>();
 
-        for (CalSAWSPerson person : personList) {
-            for (Contact existingCon : scope) {
+        for (Contact con : scope) {
+            cins.add(con.CIN__c);
+        }
+
+        for (Contact existingCon : scope) {
+            for (CalSAWSPerson person : personList) {
                 // * UPDATE FIELDS OF EXISTING CONTACTS
-                if (personIds.contains(existingCon.CIN__c)) {
-                    if (existingCon.CIN__c == person.cin) {
-                        existingCon.CalWIN_ClientID__c = person.persId;
-                        existingCon.Birthdate = person.dob;
-                        existingCon.CalWIN_GenderId__c = person.gender;
-                        existingCon.Email = person.emailAddr;
-                        existingCon.CalWIN_EthnicityID__c = person.ethnicity[0].raceType;
+                if (cins.contains(person.cin) && person.cin == existingCon.CIN__c) {
+                    existingCon.CalWIN_ClientID__c = person.persId;
+                    existingCon.Birthdate = person.dob;
+                    existingCon.CalWIN_GenderId__c = person.gender;
+                    existingCon.Email = person.emailAddr;
+                    existingCon.CalWIN_EthnicityID__c = person.ethnicity[0].raceType;
 
-                        if (person.phNumbers != null && person.phNumbers.size() > 0) {
-                            for (CalSAWSPerson.Phones phone : person.phNumbers) {
-                                switch on phone.type {
-                                    when 'Home' {
-                                        existingCon.Phone = phone.phNum;
-                                    }
-                                    when 'Cell' {
-                                        existingCon.MobilePhone = phone.phNum;
-                                    }
+                    if (person.phNumbers != null && person.phNumbers.size() > 0) {
+                        for (CalSAWSPerson.Phones phone : person.phNumbers) {
+                            switch on phone.type {
+                                when 'Home' {
+                                    existingCon.Phone = phone.phNum;
+                                }
+                                when 'Cell' {
+                                    existingCon.MobilePhone = phone.phNum;
                                 }
                             }
                         }
+                    }
 
-                        if (person.addr != null && person.addr.size() > 0) {
-                            for (CalSAWSPerson.Address address : person.addr) {
-                                switch on address.type {
-                                    when 'Mailing' {
-                                        existingCon.MailingStreet = address.line1Addr + ' ' + address.line2Addr;
-                                        existingCon.MailingCity = address.cityName;
-                                        existingCon.MailingState = address.stateCode;
-                                        existingCon.MailingPostalCode = address.zipCodeNum;
-                                    }
-                                    when 'Physical' {
-                                        existingCon.OtherStreet = address.line1Addr + ' ' + address.line2Addr;
-                                        existingCon.OtherCity = address.cityName;
-                                        existingCon.OtherState = address.stateCode;
-                                        existingCon.OtherPostalCode = address.zipCodeNum; 
-                                    }
+                    if (person.addr != null && person.addr.size() > 0) {
+                        for (CalSAWSPerson.Address address : person.addr) {
+                            switch on address.type {
+                                when 'Mailing' {
+                                    existingCon.MailingStreet = address.line1Addr + ' ' + address.line2Addr;
+                                    existingCon.MailingCity = address.cityName;
+                                    existingCon.MailingState = address.stateCode;
+                                    existingCon.MailingPostalCode = address.zipCodeNum;
+                                }
+                                when 'Physical' {
+                                    existingCon.OtherStreet = address.line1Addr + ' ' + address.line2Addr;
+                                    existingCon.OtherCity = address.cityName;
+                                    existingCon.OtherState = address.stateCode;
+                                    existingCon.OtherPostalCode = address.zipCodeNum; 
                                 }
                             }
                         }
+                    }
 
-                        if (person.cases.size() == 1) {
-                            existingCon.Launchpad__Case_Number__c = person.cases[0].caseNum;
-                        }
-                        
-                        if (person.cases.size() == 2) {
-                            existingCon.Case_Number_2__c = person.cases[1].caseNum;
-                        }
-                        conToUpsert.add(existingCon);
-                        cinContactMap.put(existingCon.CIN__c, existingCon);
-                    }  
-                } else {
+                    if (person.cases.size() == 1) {
+                        existingCon.Launchpad__Case_Number__c = person.cases[0].caseNum;
+                    }
+                    
+                    if (person.cases.size() == 2) {
+                        existingCon.Case_Number_2__c = person.cases[1].caseNum;
+                    }
+                    conToUpsert.add(existingCon);
+                    cinContactMap.put(existingCon.CIN__c, existingCon);
+                } else if (!cins.contains(person.cin)) {
 
                     // * CREATE NEW CONTACT IF ONE IS NOT FOUND
                     Contact con = new Contact(
