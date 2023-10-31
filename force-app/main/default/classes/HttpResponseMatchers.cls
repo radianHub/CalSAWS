@@ -14,12 +14,19 @@ public with sharing class HttpResponseMatchers {
             }
         }
     } 
-    
+
     public class PersonMatcher implements HttpMatchingStrategy {
         public HttpResponse matchResponse(HttpRequest req, Map<String, HttpResponse> responseStore, Boolean pass, Boolean failOnAuth) {
-            if(req.getEndpoint().contains('person')) {
+            if(req.getEndpoint().contains('person') && req.getEndpoint().contains('?')) {
                 if (pass) {
-                    return responseStore.get('person');
+                    List<String> param = req.getEndpoint().split('\\?');
+                    if (param[param.size() - 1] == 'cin=987654321') {
+                        return responseStore.get('person2');
+                    } else if (param[param.size() - 1] == 'cin=123456789') {
+                        return responseStore.get('person1');
+                    } else {
+                        return responseStore.get('person');
+                    }
                 } else {
                     return responseStore.get('personFailure');
                 }
