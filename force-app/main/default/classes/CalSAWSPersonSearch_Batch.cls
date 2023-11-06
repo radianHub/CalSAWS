@@ -49,10 +49,10 @@ public with sharing class CalSAWSPersonSearch_Batch implements Database.Batchabl
 
     public void execute(Database.BatchableContext BC, List<Contact> scope) {
         Set<Contact> conToUpsert = new Set<Contact>();
+        CalSAWSAuthentication.Token token = CalSAWSAuthentication.authorize(endpoints.get('Token'));
 
         for (Contact con : scope) {
             if (con.Launchpad__Unique_ID_SSN__c != null && (!con.Launchpad__Unique_ID_SSN__c.contains(' ') || !con.Launchpad__Unique_ID_SSN__c.contains('-'))) {
-                CalSAWSAuthentication.Token token = CalSAWSAuthentication.authorize(endpoints.get('Token'));
                 List<CalSAWSPerson> per = CalSAWSUtilities.processPerson(endpoints, con.Launchpad__Unique_ID_SSN__c, token);
                 if (per != null) {
                     recordCount++;

@@ -1,9 +1,11 @@
 public with sharing class CalSAWSProcess_Schedule implements Schedulable{
     public Map<String, String> endpoints;
     public static final String JOBNAME = 'CalSAWS Data Sync';
+    public Integer bSize;
 
-    public CalSAWSProcess_Schedule() {
+    public CalSAWSProcess_Schedule(Integer bSize) {
         this.endpoints = new Map<String, String>();
+        this.bSize = bSize;
         List<CalSAWS_Endpoint__mdt> endpointList = [
             SELECT URL__c, MasterLabel
             FROM CalSAWS_Endpoint__mdt
@@ -19,14 +21,14 @@ public with sharing class CalSAWSProcess_Schedule implements Schedulable{
             CalSAWSUtilities.processPersons(endpoints);
             // * PROCESS EXISTING CONTACTS USINGS SSN TO FIND UPDATED DATA
             CalSAWSPersonSearch_Batch b = new CalSAWSPersonSearch_Batch(endpoints);
-            Database.executeBatch(b, 50);
+            Database.executeBatch(b, bSize);
         }
     }
 
-    public static void scheduleJob(String cronExp) {
+    public static void scheduleJob(String cronExp, Integer batchSize) {
         unscheduleJob();
         if (cronExp != null) {
-            Id jobId = System.schedule(JOBNAME, cronExp, new CalSAWSProcess_Schedule());
+            Id jobId = System.schedule(JOBNAME, cronExp, new CalSAWSProcess_Schedule(batchSize));
         }
     }
 
