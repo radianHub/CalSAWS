@@ -10,6 +10,9 @@ public with sharing class CalSAWSPersonSearch_Batch implements Database.Batchabl
     }
 
     public Database.QueryLocator start(Database.BatchableContext BC) {
+
+        String rtId = [SELECT Id FROM RecordType WHERE DeveloperName = 'Job_Seeker' AND SobjectType = 'Contact'].Id;
+
         return Database.getQueryLocator([
             SELECT
                 Id,
@@ -39,7 +42,8 @@ public with sharing class CalSAWSPersonSearch_Batch implements Database.Batchabl
                 Case_Number_2__c
             FROM
                 Contact
-
+            WHERE
+                RecordTypeId = :rtId
         ]);
     }
 
@@ -47,10 +51,11 @@ public with sharing class CalSAWSPersonSearch_Batch implements Database.Batchabl
         Set<Contact> conToUpsert = new Set<Contact>();
 
         for (Contact con : scope) {
-            recordCount++;
             if (con.Launchpad__Unique_ID_SSN__c != null) {
                 List<CalSAWSPerson> per = CalSAWSUtilities.processPerson(endpoints, con.Launchpad__Unique_ID_SSN__c);
                 if (per != null) {
+                    recordCount++;
+
                     con.CalWIN_ClientID__c = per[0].persId;
                     con.CIN__c = per[0].cin;
                     con.Birthdate = per[0].dob;

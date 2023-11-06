@@ -68,7 +68,9 @@ public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Databas
                     existingCon.Birthdate = person.dob;
                     existingCon.CalWIN_GenderId__c = person.gender;
                     existingCon.Email = person.emailAddr;
-                    existingCon.CalWIN_EthnicityID__c = person.ethnicity[0].raceType;
+                    if (person.ethnicity != null && person.ethnicity.size() > 0) {
+                        existingCon.CalWIN_EthnicityID__c = person.ethnicity[0].raceType;
+                    }
 
                     if (person.phNumbers != null && person.phNumbers.size() > 0) {
                         for (CalSAWSPerson.Phones phone : person.phNumbers) {
@@ -125,9 +127,12 @@ public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Databas
                         Launchpad__Unique_ID_SSN__c = person.ssn,
                         CalWIN_GenderID__c = person.gender,
                         Email = person.emailAddr,
-                        Launchpad__Languages1__c = person.spokenLang,
-                        CalWIN_EthnicityID__c = person.ethnicity[0].raceType
+                        Launchpad__Languages1__c = person.spokenLang
                     );
+                        
+                    if (person.ethnicity != null && person.ethnicity.size() > 0) {
+                        con.CalWIN_EthnicityID__c = person.ethnicity[0].raceType;
+                    }
 
                     if (person.phNumbers != null && person.phNumbers.size() > 0) {
                         for (CalSAWSPerson.Phones phone : person.phNumbers) {
