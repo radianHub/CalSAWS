@@ -52,8 +52,8 @@ public with sharing class CalSAWSUtilities {
         Id jobId = System.enqueueJob(new CalSAWSPerson_Queueable(personList, endpoints));
     }
     
-    public static List<CalSAWSPerson> processPerson(Map<String, String> endpoints, String ssn) {
-        CalSAWSAuthentication.Token token = CalSAWSAuthentication.authorize(endpoints.get('Token'));
+    public static List<CalSAWSPerson> processPerson(Map<String, String> endpoints, String ssn, CalSAWSAuthentication.Token token) {
+        // CalSAWSAuthentication.Token token = CalSAWSAuthentication.authorize(endpoints.get('Token'));
 
         return CalSAWSCallouts.getPersonBySsn(
             token,
