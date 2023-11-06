@@ -182,14 +182,18 @@ public with sharing class CalSAWSProgram_Batch implements Database.Batchable<sOb
                         }
                     }
                 }
-                Contact con = new Contact(
-                    Id = cinContactMap.get(cin).Id,
-                    CalWORKs_ES__c = worker
-                );
-                conToUpdate.add(con);
+                if (cinContactMap.get(cin).Id != null) {
+                    Contact con = new Contact(
+                        Id = cinContactMap.get(cin).Id,
+                        CalWORKs_ES__c = worker
+                    );
+                    conToUpdate.add(con);
+                }
             }   
         }
-        update conToUpdate;
+        if (conToUpdate.size() > 0) {
+            update conToUpdate;
+        }
         
         System.debug('Batch Chaining Complete');
     }
