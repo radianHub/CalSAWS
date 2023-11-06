@@ -26,9 +26,9 @@ private with sharing class CalSAWSDataBaseSyncTest {
     @IsTest
     private static void scheduleTest() {
         String cron = '0 0 2 ? * * *';
-        Id job = System.schedule('CalSAWS Data Sync', cron, new CalSAWSProcess_Schedule());
+        Id job = System.schedule('CalSAWS Data Sync', cron, new CalSAWSProcess_Schedule(50));
 
-        CalSAWSProcess_Schedule.scheduleJob(cron);
+        CalSAWSProcess_Schedule.scheduleJob(cron, 10);
     }
 
     @IsTest
