@@ -51,8 +51,9 @@ public with sharing class CalSAWSPersonSearch_Batch implements Database.Batchabl
         Set<Contact> conToUpsert = new Set<Contact>();
 
         for (Contact con : scope) {
-            if (con.Launchpad__Unique_ID_SSN__c != null) {
-                List<CalSAWSPerson> per = CalSAWSUtilities.processPerson(endpoints, con.Launchpad__Unique_ID_SSN__c);
+            if (con.Launchpad__Unique_ID_SSN__c != null && (!con.Launchpad__Unique_ID_SSN__c.contains(' ') || !con.Launchpad__Unique_ID_SSN__c.contains('-'))) {
+                CalSAWSAuthentication.Token token = CalSAWSAuthentication.authorize(endpoints.get('Token'));
+                List<CalSAWSPerson> per = CalSAWSUtilities.processPerson(endpoints, con.Launchpad__Unique_ID_SSN__c, token);
                 if (per != null) {
                     recordCount++;
 
