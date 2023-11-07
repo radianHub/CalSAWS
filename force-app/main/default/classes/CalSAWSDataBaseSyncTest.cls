@@ -415,6 +415,44 @@ private with sharing class CalSAWSDataBaseSyncTest {
     }
 
     @isTest
+    private static void queueablesTest() {
+       // * INITIALIZE MOCK GENERATOR
+       MockMultiHttpResponseGenerator mock = new MockMultiHttpResponseGenerator(responseStore, matchers, true, false);
+
+       Test.setMock(HttpCalloutMock.class, mock);
+       
+       CalSAWS_Credentials__c creds = new CalSAWS_Credentials__c(
+           SetupOwnerId = UserInfo.getOrganizationId(),
+           Client_Id__c = '123',
+           Client_Secret__c = '123',
+           Scope__c = 'scope'
+       );
+       insert creds;
+
+       Contact con = new Contact(
+           FirstName = 'FTest',
+           LastName = 'LTest',
+           Launchpad__Unique_ID_SSN__c = '123456789',
+           CIN__c = '123456789'
+       );
+       insert con;
+
+       Map<String, Contact> cinConMap = new Map<String, Contact>{ con.CIN__c => con };
+
+       Test.startTest();
+       // * BUILD ENPOINTS
+       Map<String, String> endpoints = new Map<String, String>{
+           'Token' => 'authentication-server',
+           'Persons' => 'person',
+           'Cases' => 'case',
+           'Programs' => 'program'
+       };       
+
+       Id jobId = System.enqueueJob(new CalSAWSQueueables(endpoints, cinConMap));
+       Test.stopTest(); 
+    }
+
+    @isTest
     private static void programQueueSuccess() {
         // * INITIALIZE MOCK GENERATOR
         MockMultiHttpResponseGenerator mock = new MockMultiHttpResponseGenerator(responseStore, matchers, true, false);

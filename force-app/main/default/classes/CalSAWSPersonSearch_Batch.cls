@@ -114,8 +114,7 @@ public with sharing class CalSAWSPersonSearch_Batch implements Database.Batchabl
         CalSAWSUtilities.processUpsertResultList(Database.upsert(conToUpsertList, false), 'Contact');
 
         if (!Test.isRunningTest()) {
-            Id jobId = System.enqueueJob(new CalSAWSCase_Queueable(endpoints, cinContactMap));
-            Id jobId2 = System.enqueueJob(new CalSAWSProgram_Queueable(endpoints, cinContactMap));
+            Id jobId = System.enqueueJob(new CalSAWSQueueables(endpoints, cinContactMap)); 
         }
         
     }
