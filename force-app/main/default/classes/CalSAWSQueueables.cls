@@ -1,16 +1,16 @@
 public with sharing class CalSAWSQueueables implements Queueable, Database.AllowsCallouts {
     Map<String, String> endpoints;
-    Map<String, Contact> cinContactMap;
+    Map<String, String> cinContactMap;
 
-    public CalSAWSQueueables(Map<String, String> endpoints, Map<String, Contact> cinContactMap) {
+    public CalSAWSQueueables(Map<String, String> endpoints, Map<String, String> cinContactMap) {
         this.endpoints = endpoints;
         this.cinContactMap = cinContactMap;
     }
 
     public void execute(QueueableContext qc) {
-        if (!Test.isRunningTest()) {
-            Id jobId = System.enqueueJob(new CalSAWSCase_Queueable(endpoints, cinContactMap));
-            Id jobId2 = System.enqueueJob(new CalSAWSProgram_Queueable(endpoints, cinContactMap));
-        }
+        // if (!Test.isRunningTest()) {
+            CalSAWSUtilities.processCases(endpoints, cinContactMap);
+            CalSAWSUtilities.processPrograms(endpoints, cinContactMap);
+        // }
     }
 }

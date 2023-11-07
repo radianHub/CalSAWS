@@ -270,7 +270,7 @@ private with sharing class CalSAWSDataBaseSyncTest {
         );
         insert cs;
 
-        Map<String, Contact> cinConMap = new Map<String, Contact>{ con.CIN__c => con };
+        Map<String, String> cinConMap = new Map<String, String>{ con.CIN__c => con.Id };
 
         Test.startTest();
         // * BUILD ENPOINTS
@@ -281,7 +281,7 @@ private with sharing class CalSAWSDataBaseSyncTest {
             'Programs' => 'program'
         };
         
-        Id jobId = System.enqueueJob(new CalSAWSCase_Queueable(endpoints, cinConMap));
+        Id jobId = System.enqueueJob(new CalSAWSQueueables(endpoints, cinConMap));
         Test.stopTest();
     }
 
@@ -308,7 +308,7 @@ private with sharing class CalSAWSDataBaseSyncTest {
         );
         insert con;
 
-        Map<String, Contact> cinConMap = new Map<String, Contact>{ con.CIN__c => con };
+        Map<String, String> cinConMap = new Map<String, String>{ con.CIN__c => con.Id };
 
         Test.startTest();
         // * BUILD ENPOINTS
@@ -319,7 +319,7 @@ private with sharing class CalSAWSDataBaseSyncTest {
             'Programs' => 'program'
         };       
 
-        Id jobId = System.enqueueJob(new CalSAWSCase_Queueable(endpoints, cinConMap));
+        Id jobId = System.enqueueJob(new CalSAWSQueueables(endpoints, cinConMap));
         Test.stopTest();
     }
 
@@ -346,7 +346,7 @@ private with sharing class CalSAWSDataBaseSyncTest {
         );
         insert con;
 
-        Map<String, Contact> cinConMap = new Map<String, Contact>{ con.CIN__c => con };
+        Map<String, String> cinConMap = new Map<String, String>{ con.CIN__c => con.Id };
 
         Test.startTest();
         // * BUILD ENPOINTS
@@ -399,7 +399,7 @@ private with sharing class CalSAWSDataBaseSyncTest {
        );
        insert con;
 
-       Map<String, Contact> cinConMap = new Map<String, Contact>{ con.CIN__c => con };
+       Map<String, String> cinConMap = new Map<String, String>{ con.CIN__c => con.Id };
 
        Test.startTest();
        // * BUILD ENPOINTS
@@ -410,7 +410,7 @@ private with sharing class CalSAWSDataBaseSyncTest {
            'Programs' => 'program'
        };       
 
-       Id jobId = System.enqueueJob(new CalSAWSProgram_Queueable(endpoints, cinConMap));
+       Id jobId = System.enqueueJob(new CalSAWSQueueables(endpoints, cinConMap));
        Test.stopTest(); 
     }
 
@@ -437,7 +437,7 @@ private with sharing class CalSAWSDataBaseSyncTest {
        );
        insert con;
 
-       Map<String, Contact> cinConMap = new Map<String, Contact>{ con.CIN__c => con };
+       Map<String, String> cinConMap = new Map<String, String>{ con.CIN__c => con.Id };
 
        Test.startTest();
        // * BUILD ENPOINTS
@@ -481,7 +481,7 @@ private with sharing class CalSAWSDataBaseSyncTest {
         );
         insert p;
 
-        Map<String, Contact> cinConMap = new Map<String, Contact>{ con.CIN__c => con };
+        Map<String, String> cinConMap = new Map<String, String>{ con.CIN__c => con.Id };
 
         Test.startTest();
         // * BUILD ENPOINTS
@@ -492,7 +492,7 @@ private with sharing class CalSAWSDataBaseSyncTest {
             'Programs' => 'program'
         };       
 
-        Id jobId = System.enqueueJob(new CalSAWSProgram_Queueable(endpoints, cinConMap));
+        Id jobId = System.enqueueJob(new CalSAWSQueueables(endpoints, cinConMap));
         Test.stopTest(); 
     }
 
@@ -525,7 +525,7 @@ private with sharing class CalSAWSDataBaseSyncTest {
         );
         insert p;
 
-        Map<String, Contact> cinConMap = new Map<String, Contact>{ con.CIN__c => con };
+        Map<String, String> cinConMap = new Map<String, String>{ con.CIN__c => con.Id };
 
         Test.startTest();
         // * BUILD ENPOINTS
