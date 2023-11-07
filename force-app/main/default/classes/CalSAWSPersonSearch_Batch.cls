@@ -1,12 +1,9 @@
-public with sharing class CalSAWSPersonSearch_Batch implements Database.Batchable<sObject>, Database.Stateful, Database.AllowsCallouts {
+public with sharing class CalSAWSPersonSearch_Batch implements Database.Batchable<sObject>, Database.AllowsCallouts {
 
     Map<String, String> endpoints;
-    Map<String, Contact> cinContactMap;
-    Integer recordCount = 0;
 
     public CalSAWSPersonSearch_Batch(Map<String, String> endpoints) {
         this.endpoints = endpoints;
-        this.cinContactMap = new Map<String, Contact>();
     }
 
     public Database.QueryLocator start(Database.BatchableContext BC) {
@@ -49,13 +46,15 @@ public with sharing class CalSAWSPersonSearch_Batch implements Database.Batchabl
 
     public void execute(Database.BatchableContext BC, List<Contact> scope) {
         Set<Contact> conToUpsert = new Set<Contact>();
+        Map<String, Contact> cinContactMap = new Map<String, Contact>();
+
         CalSAWSAuthentication.Token token = CalSAWSAuthentication.authorize(endpoints.get('Token'));
 
         for (Contact con : scope) {
             if (con.Launchpad__Unique_ID_SSN__c != null && (!con.Launchpad__Unique_ID_SSN__c.contains(' ') || !con.Launchpad__Unique_ID_SSN__c.contains('-'))) {
                 List<CalSAWSPerson> per = CalSAWSUtilities.processPerson(endpoints, con.Launchpad__Unique_ID_SSN__c, token);
                 if (per != null) {
-                    recordCount++;
+                    // recordCount++;
 
                     con.CalWIN_ClientID__c = per[0].persId;
                     con.CIN__c = per[0].cin;
@@ -109,19 +108,25 @@ public with sharing class CalSAWSPersonSearch_Batch implements Database.Batchabl
             }
         }
 
-         // * UPSERT CONTACTS
-         List<Contact> conToUpsertList = new List<Contact>();
-         conToUpsertList.addAll(conToUpsert);
-         CalSAWSUtilities.processUpsertResultList(Database.upsert(conToUpsertList, false), 'Contact');
+        // * UPSERT CONTACTS
+        List<Contact> conToUpsertList = new List<Contact>();
+        conToUpsertList.addAll(conToUpsert);
+        CalSAWSUtilities.processUpsertResultList(Database.upsert(conToUpsertList, false), 'Contact');
+
+        if (!Test.isRunningTest()) {
+            Id jobId = System.enqueueJob(new CalSAWSCase_Queueable(endpoints, cinContactMap));
+            Id jobId2 = System.enqueueJob(new CalSAWSProgram_Queueable(endpoints, cinContactMap));
+        }
+        
     }
 
     public void finish(Database.BatchableContext BC) {
 
-        if (recordCount != 0) {
-            // * CHAIN THE NEXT BATCH PROCESS (CASES)
-            if (!Test.isRunningTest()) {
-                CalSAWSUtilities.processCases(endpoints, cinContactMap);   
-            }
-        }
+        // if (recordCount != 0) {
+        //     // * CHAIN THE NEXT BATCH PROCESS (CASES)
+        //     if (!Test.isRunningTest()) {
+        //         CalSAWSUtilities.processCases(endpoints, cinContactMap);   
+        //     }
+        // }
     }
 }
