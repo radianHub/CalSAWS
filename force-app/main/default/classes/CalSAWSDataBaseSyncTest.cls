@@ -241,7 +241,7 @@ private with sharing class CalSAWSDataBaseSyncTest {
     }
 
     @isTest
-    private static void caseBatchSuccess() {
+    private static void caseQueueSuccess() {
         // * INITIALIZE MOCK GENERATOR
         MockMultiHttpResponseGenerator mock = new MockMultiHttpResponseGenerator(responseStore, matchers, true, false);
 
@@ -279,14 +279,14 @@ private with sharing class CalSAWSDataBaseSyncTest {
             'Persons' => 'person',
             'Cases' => 'case',
             'Programs' => 'program'
-        };       
-
-        CalSAWSUtilities.processCases(endpoints, cinConMap);
+        };
+        
+        Id jobId = System.enqueueJob(new CalSAWSCase_Queueable(endpoints, cinConMap));
         Test.stopTest();
     }
 
     @isTest
-    private static void newCaseBatchSuccess() {
+    private static void newCaseQueueSuccess() {
         // * INITIALIZE MOCK GENERATOR
         MockMultiHttpResponseGenerator mock = new MockMultiHttpResponseGenerator(responseStore, matchers, true, false);
 
@@ -319,12 +319,12 @@ private with sharing class CalSAWSDataBaseSyncTest {
             'Programs' => 'program'
         };       
 
-        CalSAWSUtilities.processCases(endpoints, cinConMap);
+        Id jobId = System.enqueueJob(new CalSAWSCase_Queueable(endpoints, cinConMap));
         Test.stopTest();
     }
 
     @isTest
-    private static void caseBatchFail() {
+    private static void caseQueueFail() {
         // * INITIALIZE MOCK GENERATOR
         MockMultiHttpResponseGenerator mock = new MockMultiHttpResponseGenerator(responseStore, matchers, false, false);
 
@@ -361,8 +361,23 @@ private with sharing class CalSAWSDataBaseSyncTest {
         Test.stopTest();
     }
 
+    @IsTest
+    private static void caseBatchTest() {
+
+        CalWINs_Case__c cs = new CalWINs_Case__c(
+            Case_Number__c = 'B123',
+            Name = 'Test'
+        );
+        insert cs;
+
+        Test.startTest();
+        CalSAWSCase_Batch b = new CalSAWSCase_Batch();
+        Database.executeBatch(b);
+        Test.stopTest();
+    }
+
     @isTest
-    private static void newProgramBatchSuccess() {
+    private static void newProgramQueueSuccess() {
        // * INITIALIZE MOCK GENERATOR
        MockMultiHttpResponseGenerator mock = new MockMultiHttpResponseGenerator(responseStore, matchers, true, false);
 
@@ -395,12 +410,12 @@ private with sharing class CalSAWSDataBaseSyncTest {
            'Programs' => 'program'
        };       
 
-       CalSAWSUtilities.processPrograms(endpoints, cinConMap);
+       Id jobId = System.enqueueJob(new CalSAWSProgram_Queueable(endpoints, cinConMap));
        Test.stopTest(); 
     }
 
     @isTest
-    private static void programBatchSuccess() {
+    private static void programQueueSuccess() {
         // * INITIALIZE MOCK GENERATOR
         MockMultiHttpResponseGenerator mock = new MockMultiHttpResponseGenerator(responseStore, matchers, true, false);
 
@@ -439,12 +454,12 @@ private with sharing class CalSAWSDataBaseSyncTest {
             'Programs' => 'program'
         };       
 
-        CalSAWSUtilities.processPrograms(endpoints, cinConMap);
+        Id jobId = System.enqueueJob(new CalSAWSProgram_Queueable(endpoints, cinConMap));
         Test.stopTest(); 
     }
 
     @isTest
-    private static void programBatchFail() {
+    private static void programQueueFail() {
         // * INITIALIZE MOCK GENERATOR
         MockMultiHttpResponseGenerator mock = new MockMultiHttpResponseGenerator(responseStore, matchers, false, false);
 
@@ -485,5 +500,18 @@ private with sharing class CalSAWSDataBaseSyncTest {
 
         CalSAWSUtilities.processPrograms(endpoints, cinConMap);
         Test.stopTest(); 
+    }
+
+    @IsTest
+    private static void programBatchTest() {
+        CalSAWS_Program__c p = new CalSAWS_Program__c(
+            Program_Id__c = '1234'
+        );
+        insert p; 
+
+        Test.startTest();
+        CalSAWSProgram_Batch b = new CalSAWSProgram_Batch();
+        Database.executeBatch(b);
+        Test.stopTest();
     }
 }

@@ -48,7 +48,6 @@ public with sharing class CalSAWSUtilities {
             }
         }
 
-        // * START THE BATCH CHAINING PROCESS
         Id jobId = System.enqueueJob(new CalSAWSPerson_Queueable(personList, endpoints));
     }
     
@@ -76,9 +75,11 @@ public with sharing class CalSAWSUtilities {
             cinCaseMap.put(cin, cs);
         }
 
-        System.debug(':::STARTING CASE BATCH:::');
-        CalSAWSCase_Batch b = new CalSAWSCase_Batch(endpoints, cinContactMap, cinCaseMap);
-        Database.executeBatch(b, 400);
+        CalSAWSCase.upsertCases(cinContactMap, cinCaseMap);
+
+        // System.debug(':::STARTING CASE BATCH:::');
+        // CalSAWSCase_Batch b = new CalSAWSCase_Batch(endpoints, cinContactMap, cinCaseMap);
+        // Database.executeBatch(b, 400);
     }
 
     public static void processPrograms(Map<String, String> endpoints, Map<String, Contact> cinContactMap) {
@@ -97,9 +98,11 @@ public with sharing class CalSAWSUtilities {
             cinProgramMap.put(cin, pg);
         }
 
-        System.debug(':::STARTING PROGRAM BATCH:::');
-        CalSAWSProgram_Batch b = new CalSAWSProgram_Batch(endpoints, cinContactMap, cinProgramMap);
-        Database.executeBatch(b, 400);
+        CalSAWSProgram.upsertPrograms(cinContactMap, cinProgramMap);
+
+        // System.debug(':::STARTING PROGRAM BATCH:::');
+        // CalSAWSProgram_Batch b = new CalSAWSProgram_Batch(endpoints, cinContactMap, cinProgramMap);
+        // Database.executeBatch(b, 400);
     }
 
     public static void processUpsertResultList(Database.UpsertResult[] upsertResultList, String sObjName) {

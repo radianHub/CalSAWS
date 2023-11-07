@@ -50,4 +50,110 @@ public with sharing class CalSAWSCase {
         public Date begDate;
         public Date endDate;
     }
+
+    public static void upsertCases(Map<String, Contact> cinContactMap, Map<String, List<CalSAWSCase>> cinCaseMap) {
+
+        if (cinCaseMap != null && cinCaseMap.size() > 0) {
+            Set<CalWINs_Case__c> caseToUpsert = new Set<CalWINs_Case__c>();
+    
+            List<CalWINs_Case__c> existingCs = [
+                SELECT
+                    CAlWIN_ClientID__c,
+                    Name,
+                    Case_Number__c,
+                    Case_Status__c,
+                    Case_Status_Date__c,
+                    Contact__c,
+                    Contact__r.CIN__c
+                FROM
+                    CalWINs_Case__c
+                WHERE
+                    Contact__r.CIN__c IN :cinContactMap.keySet()
+            ];
+
+            Set<String> existingCins = new Set<String>();
+            for (CalWINs_Case__c cs : existingCs) {
+                existingCins.add(cs.Contact__r.CIN__c);
+            }
+    
+            for (String cin : cinCaseMap.keySet()) {
+                for (CalWINs_Case__c cs : existingCs) {
+                    if (existingCins.contains(cin) && cs.Contact__r.CIN__c == cin) {
+                        if (cinCaseMap.get(cin) != null) {
+                            for (CalSAWSCase calCs : cinCaseMap.get(cin)) {
+                                for (CalSAWSCase.Cases sawsCase : calCs.cases) {
+                                    if (cs.Case_Number__c == sawsCase.caseNum) {
+                                        cs.CalWIN_ClientID__c = cinContactMap.get(cin).CalWIN_ClientID__c;
+                                        cs.Contact__c = cinContactMap.get(cin).Id;
+                                        Date caseDate;
+                                        for (CalSAWSCase.CaseFlag csFlag : sawsCase.caseFlags) {
+                                            if (caseDate == null) {
+                                                caseDate = csFlag.begDate;
+                                            } else if (csFlag.begDate > caseDate) {
+                                                caseDate = csFlag.begDate;
+                                            }
+                                        }
+                                        cs.Case_Status_Date__c = caseDate;
+                                        cs.Name = sawsCase.caseName;
+
+                                        caseToUpsert.add(cs);
+                                    } else {
+                                        CalWINs_Case__c newCs = new CalWINs_Case__c();
+                                        newCs.Case_Number__c = sawsCase.caseNum;
+                                        newCs.Name = sawsCase.caseName;
+                                        newCs.CalWIN_ClientID__c = cinContactMap.get(cin).CalWIN_ClientID__c;
+                                        newCs.Contact__c = cinContactMap.get(cin).Id;
+                                        if (sawsCase.caseFlags != null && sawsCase.caseFlags.size() > 0) {
+                                            Date caseDate;
+                                            for (CalSAWSCase.CaseFlag csFlag : sawsCase.caseFlags) {
+                                                if (caseDate == null) {
+                                                    caseDate = csFlag.begDate;
+                                                } else if (csFlag.begDate > caseDate) {
+                                                    caseDate = csFlag.begDate;
+                                                }
+                                            }
+                                            newCs.Case_Status_Date__c = caseDate;
+                                        }
+
+                                        caseToUpsert.add(newCs);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (!existingCins.contains(cin)) {
+                    if (cinCaseMap.get(cin) != null) {
+                        for (CalSAWSCase calCs : cinCaseMap.get(cin)) {
+                            for (CalSAWSCase.Cases sawsCase : calCs.cases) {
+                                CalWINs_Case__c newCs = new CalWINs_Case__c();
+                                newCs.Case_Number__c = sawsCase.caseNum;
+                                newCs.Name = sawsCase.caseName;
+                                newCs.CalWIN_ClientID__c = cinContactMap.get(cin).CalWIN_ClientID__c;
+                                newCs.Contact__c = cinContactMap.get(cin).Id;
+                                if (sawsCase.caseFlags != null && sawsCase.caseFlags.size() > 0) {
+                                    Date caseDate;
+                                    for (CalSAWSCase.CaseFlag csFlag : sawsCase.caseFlags) {
+                                        if (caseDate == null) {
+                                            caseDate = csFlag.begDate;
+                                        } else if (csFlag.begDate > caseDate) {
+                                            caseDate = csFlag.begDate;
+                                        }
+                                    }
+                                    newCs.Case_Status_Date__c = caseDate;
+                                }
+        
+                                caseToUpsert.add(newCs);
+                            }
+                        }                            
+                    }
+                }
+            }
+
+            List<CalWINs_Case__c> caseToUpsertList = new List<CalWINs_Case__c>();
+            caseToUpsertList.addAll(caseToUpsert);
+            CalSAWSUtilities.processUpsertResultList(Database.upsert(caseToUpsertList, false), 'CalWINs_Case__c'); 
+        }
+    }
 }

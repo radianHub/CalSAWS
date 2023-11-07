@@ -183,13 +183,18 @@ public class CalSAWSPerson_Batch implements Database.Batchable<sObject>, Databas
         List<Contact> conToUpsertList = new List<Contact>();
         conToUpsertList.addAll(conToUpsert);
         CalSAWSUtilities.processUpsertResultList(Database.upsert(conToUpsertList, false), 'Contact');
+
+        if (!Test.isRunningTest()) {
+            Id jobId = System.enqueueJob(new CalSAWSCase_Queueable(endpoints, cinContactMap));
+            Id jobId2 = System.enqueueJob(new CalSAWSProgram_Queueable(endpoints, cinContactMap));
+        }
     }
 
     public void finish(Database.BatchableContext BC) {
 
-        // * CHAIN THE NEXT BATCH PROCESS (CASES)
-        if (!Test.isRunningTest()) {
-            CalSAWSUtilities.processCases(endpoints, cinContactMap);
-        }
+        // // * CHAIN THE NEXT BATCH PROCESS (CASES)
+        // if (!Test.isRunningTest()) {
+        //     CalSAWSUtilities.processCases(endpoints, cinContactMap);
+        // }
     }
 }
