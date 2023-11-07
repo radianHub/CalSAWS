@@ -61,7 +61,8 @@ public with sharing class CalSAWSUtilities {
         );
     }
 
-    public static void processCases(Map<String, String> endpoints, Map<String, Contact> cinContactMap) {
+    @future(callout=true)
+    public static void processCases(Map<String, String> endpoints, Map<String, String> cinContactMap) {
         CalSAWSAuthentication.Token token = CalSAWSAuthentication.authorize(endpoints.get('Token'));
 
         Map<String, List<CalSAWSCase>> cinCaseMap = new Map<String, List<CalSAWSCase>>();
@@ -82,7 +83,8 @@ public with sharing class CalSAWSUtilities {
         // Database.executeBatch(b, 400);
     }
 
-    public static void processPrograms(Map<String, String> endpoints, Map<String, Contact> cinContactMap) {
+    @future(callout=true)
+    public static void processPrograms(Map<String, String> endpoints, Map<String, String> cinContactMap) {
         CalSAWSAuthentication.Token token = CalSAWSAuthentication.authorize(endpoints.get('Token'));
 
         Map<String, List<CalSAWSProgram>> cinProgramMap = new Map<String, List<CalSAWSProgram>>();

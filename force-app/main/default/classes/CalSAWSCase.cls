@@ -51,7 +51,7 @@ public with sharing class CalSAWSCase {
         public Date endDate;
     }
 
-    public static void upsertCases(Map<String, Contact> cinContactMap, Map<String, List<CalSAWSCase>> cinCaseMap) {
+    public static void upsertCases(Map<String, String> cinContactMap, Map<String, List<CalSAWSCase>> cinCaseMap) {
 
         if (cinCaseMap != null && cinCaseMap.size() > 0) {
             Set<CalWINs_Case__c> caseToUpsert = new Set<CalWINs_Case__c>();
@@ -83,8 +83,8 @@ public with sharing class CalSAWSCase {
                             for (CalSAWSCase calCs : cinCaseMap.get(cin)) {
                                 for (CalSAWSCase.Cases sawsCase : calCs.cases) {
                                     if (cs.Case_Number__c == sawsCase.caseNum) {
-                                        cs.CalWIN_ClientID__c = cinContactMap.get(cin).CalWIN_ClientID__c;
-                                        cs.Contact__c = cinContactMap.get(cin).Id;
+                                        cs.CalWIN_ClientID__c = calCs.persId;
+                                        cs.Contact__c = cinContactMap.get(cin);
                                         Date caseDate;
                                         for (CalSAWSCase.CaseFlag csFlag : sawsCase.caseFlags) {
                                             if (caseDate == null) {
@@ -101,8 +101,8 @@ public with sharing class CalSAWSCase {
                                         CalWINs_Case__c newCs = new CalWINs_Case__c();
                                         newCs.Case_Number__c = sawsCase.caseNum;
                                         newCs.Name = sawsCase.caseName;
-                                        newCs.CalWIN_ClientID__c = cinContactMap.get(cin).CalWIN_ClientID__c;
-                                        newCs.Contact__c = cinContactMap.get(cin).Id;
+                                        newCs.CalWIN_ClientID__c = calCs.persId;
+                                        newCs.Contact__c = cinContactMap.get(cin);
                                         if (sawsCase.caseFlags != null && sawsCase.caseFlags.size() > 0) {
                                             Date caseDate;
                                             for (CalSAWSCase.CaseFlag csFlag : sawsCase.caseFlags) {
@@ -130,8 +130,8 @@ public with sharing class CalSAWSCase {
                                 CalWINs_Case__c newCs = new CalWINs_Case__c();
                                 newCs.Case_Number__c = sawsCase.caseNum;
                                 newCs.Name = sawsCase.caseName;
-                                newCs.CalWIN_ClientID__c = cinContactMap.get(cin).CalWIN_ClientID__c;
-                                newCs.Contact__c = cinContactMap.get(cin).Id;
+                                newCs.CalWIN_ClientID__c = calCs.persId;
+                                newCs.Contact__c = cinContactMap.get(cin);
                                 if (sawsCase.caseFlags != null && sawsCase.caseFlags.size() > 0) {
                                     Date caseDate;
                                     for (CalSAWSCase.CaseFlag csFlag : sawsCase.caseFlags) {
