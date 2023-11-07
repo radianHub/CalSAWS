@@ -46,7 +46,7 @@ public with sharing class CalSAWSPersonSearch_Batch implements Database.Batchabl
 
     public void execute(Database.BatchableContext BC, List<Contact> scope) {
         Set<Contact> conToUpsert = new Set<Contact>();
-        Map<String, Contact> cinContactMap = new Map<String, Contact>();
+        Map<String, String> cinContactMap = new Map<String, String>();
 
         CalSAWSAuthentication.Token token = CalSAWSAuthentication.authorize(endpoints.get('Token'));
 
@@ -103,7 +103,7 @@ public with sharing class CalSAWSPersonSearch_Batch implements Database.Batchabl
                     }
     
                     conToUpsert.add(con);
-                    cinContactMap.put(per[0].cin, con);
+                    cinContactMap.put(per[0].cin, con.Id);
                 }
             }
         }

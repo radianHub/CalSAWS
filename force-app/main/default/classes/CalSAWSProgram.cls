@@ -65,7 +65,7 @@ public with sharing class CalSAWSProgram {
         public Date endDate;
     }
 
-    public static void upsertPrograms(Map<String, Contact> cinContactMap, Map<String, List<CalSAWSProgram>> cinProgramMap) {
+    public static void upsertPrograms(Map<String, String> cinContactMap, Map<String, List<CalSAWSProgram>> cinProgramMap) {
 
         if (cinProgramMap != null && cinProgramMap.size() > 0) {
             Set<CalSAWS_Program__c> progToUpsert = new Set<CalSAWS_Program__c>();
@@ -136,7 +136,7 @@ public with sharing class CalSAWSProgram {
                                         Name = prog.pgm,
                                         Program_Id__c = prog.pgmId,
                                         Case_Number__c = prog.caseNum,
-                                        Contact__c = cinContactMap.get(cin).Id
+                                        Contact__c = cinContactMap.get(cin)
                                     );
                                     for (CalSAWSProgram.ProgramDetail progDetail : prog.programDetail) {
                                         program.Program_Status__c = progDetail.status;
@@ -177,7 +177,7 @@ public with sharing class CalSAWSProgram {
                                 Name = program.pgm,
                                 Program_Id__c = program.pgmId,
                                 Case_Number__c = program.caseNum,
-                                Contact__c = cinContactMap.get(cin).Id
+                                Contact__c = cinContactMap.get(cin)
                             );
                             for (CalSAWSProgram.ProgramDetail progDetail : program.programDetail) {
                                 prog.Program_Status__c = progDetail.status;
@@ -229,9 +229,9 @@ public with sharing class CalSAWSProgram {
                             }
                         }
                     }
-                    if (cinContactMap.get(cin).Id != null) {
+                    if (cinContactMap.get(cin) != null) {
                         Contact con = new Contact(
-                            Id = cinContactMap.get(cin).Id,
+                            Id = cinContactMap.get(cin),
                             CalWORKs_ES__c = worker
                         );
                         conToUpdate.add(con);
